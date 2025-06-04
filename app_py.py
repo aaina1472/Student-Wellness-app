@@ -9,13 +9,13 @@ Original file is located at
 # Importing Dataset
 """
 
-# 📦 Install required libraries (if needed)
+# Install required libraries 
 !pip install textblob pandas matplotlib
 
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 
-# 📄 Load the CSV file (Upload via file browser or Google Drive)
+#Load the CSV file in drive
 from google.colab import files
 uploaded = files.upload()
 
