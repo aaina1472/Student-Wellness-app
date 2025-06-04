@@ -11,7 +11,7 @@ st.markdown("Analyze your journal entries to track mood and burnout risk.")
 # Upload CSV or load static
 uploaded_file = st.file_uploader("Upload your journal entries CSV file", type=["csv"])
 if uploaded_file:
-    df = pd.read_csv(journal_text)
+    df = pd.read_csv(uploaded_file)
 else:
     st.warning("Please upload a CSV file to continue.")
     st.stop()
@@ -21,7 +21,7 @@ def analyze_mood(text):
     blob = TextBlob(str(text))
     return blob.sentiment.polarity
 
-df['Mood Score'] = df['uploaded_file'].apply(analyze_mood)
+df['Mood Score'] = df['journal_text'].apply(analyze_mood)
 
 # Classify burnout risk based on average mood score
 avg_mood = df['Mood Score'].mean()
