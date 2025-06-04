@@ -21,7 +21,7 @@ def analyze_mood(text):
     blob = TextBlob(str(text))
     return blob.sentiment.polarity
 
-df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
+df['Mood Score'] = df['uploaded_file'].apply(analyze_mood)
 
 # Classify burnout risk based on average mood score
 avg_mood = df['Mood Score'].mean()
