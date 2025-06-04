@@ -11,7 +11,7 @@ st.markdown("Analyze your journal entries to track mood and burnout risk.")
 # Upload CSV or load static
 uploaded_file = st.file_uploader("Upload your journal entries CSV file", type=["csv"])
 if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+    df = pd.read_csv(journal_text)
 else:
     st.warning("Please upload a CSV file to continue.")
     st.stop()
