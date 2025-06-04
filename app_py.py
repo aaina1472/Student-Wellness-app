@@ -8,9 +8,11 @@ Original file is located at
 
 # Importing Dataset
 """
+import streamlit as st
+import pandas as pd
+from textblob import TextBlob
+import matplotlib.pyplot as plt
 
-# Install required libraries 
-pip install textblob pandas matplotlib
 
 from textblob import TextBlob
 import matplotlib.pyplot as plt
