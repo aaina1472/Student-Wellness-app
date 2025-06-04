@@ -10,7 +10,7 @@ Original file is located at
 """
 
 # Install required libraries 
-!pip install textblob pandas matplotlib
+pip install textblob pandas matplotlib
 
 from textblob import TextBlob
 import matplotlib.pyplot as plt
