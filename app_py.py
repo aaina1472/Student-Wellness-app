@@ -35,7 +35,7 @@ def get_mood_score(text):
     blob = TextBlob(text)
     return round(blob.sentiment.polarity, 2)
 
-!pip install streamlit
+
 
 import streamlit as st
 
