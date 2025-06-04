@@ -17,9 +17,6 @@ import matplotlib.pyplot as plt
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 
-#Load the CSV file in drive
-from google.colab import files
-uploaded = files.upload()
 
 import pandas as pd
 
