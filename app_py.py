@@ -8,6 +8,7 @@ st.set_page_config(page_title="Student Wellness App", layout="centered")
 st.title("🌿 Student Wellness Dashboard")
 st.markdown("Analyze your journal entries to track mood and burnout risk.")
 
+
 # Upload CSV or load static
 uploaded_file = st.file_uploader("Upload your journal entries CSV file", type=["csv"])
 if uploaded_file:
@@ -16,10 +17,18 @@ else:
     st.warning("Please upload a CSV file to continue.")
     st.stop()
 
+
 # Basic sentiment and mood scoring
 def analyze_mood(text):
     blob = TextBlob(str(text))
-    return blob.sentiment.polarity
+    return round(blob.sentiment.polarity, 2)
+
+
+journal_input = st.text_area("Write your journal entry here:")
+if st.button("Analyze"):
+    score = analyze_mood(journal_input)
+    st.write(f"🧠 Mood Score: {score}")
+
 
 df['Mood Score'] = df['journal_text'].apply(analyze_mood)
 
