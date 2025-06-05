@@ -1,83 +1,65 @@
 import streamlit as st
-import pandas as pd
 from textblob import TextBlob
 
 st.set_page_config(page_title="Student Wellness App", layout="centered")
 
 st.title("🌿 Student Wellness Dashboard")
-st.markdown("Analyze your journal entries to track mood and get wellness support.")
-
-# Upload CSV with journal_text column
-uploaded_file = st.file_uploader("Upload your journal entries CSV file", type=["csv"])
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    
-    # Validate expected column
-    if 'journal_text' not in df.columns:
-        st.error("CSV must contain a 'journal_text' column.")
-        st.stop()
-else:
-    st.warning("Please upload a CSV file to continue.")
-    st.stop()
+st.markdown("Write about your day or feelings, and get personalized mood analysis and wellness support.")
 
 # Mood analyzer using TextBlob
 def analyze_mood(text):
     blob = TextBlob(str(text))
     return round(blob.sentiment.polarity, 2)
 
-# Analyze all entries in uploaded file
-df['Mood Score'] = df['journal_text'].apply(analyze_mood)
-
-# Journal input from user (optional)
-st.subheader("Try it Yourself:")
-journal_input = st.text_area("Write your own journal entry:")
-if st.button("Analyze My Entry"):
+# Journal input from user
+journal_input = st.text_area("📝 Write your journal entry here:")
+if st.button("Analyze My Mood"):
     if journal_input.strip():
         score = analyze_mood(journal_input)
-        st.write(f"🧠 Your Mood Score: `{score}`")
+        st.write(f"🧠 **Mood Score:** `{score}`")
+
+        # Determine burnout risk level
+        if score > 0.3:
+            burnout_risk = "Low"
+        elif score > 0.0:
+            burnout_risk = "Moderate"
+        else:
+            burnout_risk = "High"
+
+        st.metric("🧭 Burnout Risk Level", burnout_risk)
+
+        # Recommend wellness content for Moderate or High risk
+        if burnout_risk in ["Moderate", "High"]:
+            st.markdown("---")
+            st.subheader("🧘 Wellness Recommendations")
+
+            if burnout_risk == "High":
+                st.error("⚠️ High Burnout Risk Detected. Please take care of your mental health.")
+
+            # Music
+            st.markdown("### 🎵 Relaxing Music")
+            st.markdown("""
+            <iframe width="100%" height="80" src="https://www.youtube.com/embed/2OEL4P1Rz04?autoplay=1&loop=1&playlist=2OEL4P1Rz04" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            """, unsafe_allow_html=True)
+
+            # Meditation
+            st.markdown("### 🧘 Guided Meditation")
+            st.video("https://www.youtube.com/watch?v=inpok4MKVLM")
+
+            # Podcast
+            st.markdown("### 🎧 Uplifting Podcasts")
+            st.markdown("""
+            - [The Daily Shine – Mental Health & Mindfulness](https://www.theshineapp.com/)
+            - [The Happiness Lab with Dr. Laurie Santos](https://www.happinesslab.fm/)
+            - [Mindful Muslim Podcast](https://mindful-muslimah.com/podcast/)
+            """)
+
+        else:
+            st.success("✅ You're doing great! Keep journaling to maintain emotional well-being.")
+
     else:
         st.warning("Please enter some text to analyze.")
 
-# Calculate burnout risk based on overall mood
-avg_mood = df['Mood Score'].mean()
-
-if avg_mood > 0.3:
-    burnout_risk = "Low"
-elif avg_mood > 0.0:
-    burnout_risk = "Moderate"
-else:
-    burnout_risk = "High"
-
-# Summary section
-st.subheader("📊 Summary from Uploaded Journal Entries")
-st.metric("Average Mood Score", f"{avg_mood:.2f}")
-st.metric("Estimated Burnout Risk", burnout_risk)
-
-# Suggest wellness content
-if burnout_risk in ["Moderate", "High"]:
-    st.markdown("---")
-    st.subheader("🧘 Wellness Recommendations")
-
-    if burnout_risk == "High":
-        st.error("⚠️ High Burnout Risk Detected. Please prioritize self-care.")
-
-    st.markdown("### 🎵 Relaxing Music")
-    st.markdown("""
-    <iframe width="100%" height="80" src="https://www.youtube.com/embed/2OEL4P1Rz04?autoplay=1&loop=1&playlist=2OEL4P1Rz04" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    """, unsafe_allow_html=True)
-
-    st.markdown("### 🧘 Guided Meditation")
-    st.video("https://www.youtube.com/watch?v=inpok4MKVLM")
-
-    st.markdown("### Helpful Reads")
-    st.markdown("""
-    - [Manage Burnout - Mayo Clinic](https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/burnout/art-20488374)  
-    - [Coping with Stress - CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)  
-    - [Mindfulness for Beginners](https://www.headspace.com/mindfulness)  
-    """)
-
-else:
-    st.success("✅ Burnout risk is low. You're doing well — keep journaling!")
 
 
 
