@@ -11,7 +11,7 @@ for key, default in {
     "journal_input": "",
     "sleep_hours": 0.0,
     "screen_time": 0.0,
-    "workout_done": "No",
+    "workout_done": "",
     "mood_score": None,
     "burnout_risk": None
 }.items():
@@ -62,7 +62,7 @@ if reset_button:
     st.session_state.journal_input = ""
     st.session_state.sleep_hours = 0.0
     st.session_state.screen_time = 0.0
-    st.session_state.workout_done = "No"
+    st.session_state.workout_done = ""
     st.session_state.mood_score = None
     st.session_state.burnout_risk = None
     st.success("✅ Form has been reset.")
