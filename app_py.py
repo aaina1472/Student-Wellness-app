@@ -1,111 +1,69 @@
 import streamlit as st
 from textblob import TextBlob
-from datetime import datetime
 
 st.set_page_config(page_title="Student Wellness App", layout="wide")
 
 # Initialize session state defaults
-defaults = {
-    "name": "",
-    "gender": "Prefer not to say",
-    "journal_input": "",
-    "sleep_hours": 0.0,
-    "screen_time": 0.0,
-    "workout_done": "No",
-    "mood_score": None,
-    "burnout_risk": None,
-    "quiz_answers": {},
-    "quiz_submitted": False,
-    "feedback_text": "",
-    "current_page": "User Info",  # to programmatically switch pages
-}
+def init_state():
+    defaults = {
+        "name": "",
+        "gender": "Prefer not to say",
+        "journal_input": "",
+        "sleep_hours": 0.0,
+        "screen_time": 0.0,
+        "workout_done": "No",
+        "mood_score": None,
+        "burnout_risk": None,
+        "quiz_submitted": False,
+        "quiz_answers": {},
+        "personalized_plan_generated": False,
+        "current_page": "User Info",
+    }
+    for key, val in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = val
 
-for key, val in defaults.items():
-    if key not in st.session_state:
-        st.session_state[key] = val
+init_state()
 
 def analyze_mood(text):
     blob = TextBlob(text)
     return round(blob.sentiment.polarity, 2)
 
-def get_personalized_plan(risk_level, quiz_answers):
-    diet = ""
-    workout = ""
-
-    poor_sleep = quiz_answers.get("sleep_quality", "") == "Poor"
-    no_exercise = quiz_answers.get("exercise_freq", "") == "No"
-
-    if risk_level == "High":
-        diet = (
-            "Focus on nutrient-rich foods like fruits, vegetables, and whole grains. "
-            "Avoid caffeine and heavy meals before bedtime."
-        )
-        workout = (
-            "Gentle activities like yoga, stretching, and breathing exercises are recommended. "
-            "Avoid strenuous workouts until you feel better."
-        )
-        if poor_sleep:
-            diet += " Consider herbal teas like chamomile to improve sleep."
-        if no_exercise:
-            workout += " Start with 5-10 minutes of light walking daily."
-
-    elif risk_level == "Moderate":
-        diet = (
-            "Maintain a balanced diet including lean proteins, healthy fats, and complex carbs."
-        )
-        workout = (
-            "Aim for moderate cardio (like brisk walking or cycling) 3-4 times a week."
-        )
-        if poor_sleep:
-            diet += " Limit screen time before bed to improve sleep quality."
-        if no_exercise:
-            workout += " Gradually increase activity; even short workouts help."
-
-    else:
-        diet = "Keep up your healthy eating habits!"
-        workout = "Continue your regular workout routine."
-
-    return {"diet": diet, "workout": workout}
-
-# --- Sidebar navigation ---
-st.sidebar.title("Navigation")
-
+# Sidebar menu logic based on session state
 def get_menu_options():
     base = ["User Info", "Dashboard"]
-    # Show quiz and plan only if burnout risk moderate/high and journal analyzed
     if st.session_state.burnout_risk in ["Moderate", "High"]:
-        base += ["Quiz"]
+        base.append("Quiz")
         if st.session_state.quiz_submitted:
-            base += ["Personalized Plan"]
-    base += ["Feedback"]
+            base.append("Personalized Plan")
+    base.append("Feedback")
     return base
 
-menu_options = get_menu_options()
+# Sidebar
+with st.sidebar:
+    st.title("Menu")
+    options = get_menu_options()
+    page = st.radio("Go to", options, index=options.index(st.session_state.current_page) if st.session_state.current_page in options else 0)
+    st.session_state.current_page = page
 
-# Set default page to session state current_page if valid, else first in menu_options
-if st.session_state.current_page not in menu_options:
-    st.session_state.current_page = menu_options[0]
+# --- Pages --- #
 
-page = st.sidebar.radio("Go to", menu_options, index=menu_options.index(st.session_state.current_page))
-st.session_state.current_page = page  # sync page state
-
-# --- User Info Page ---
+# User Info Page
 if page == "User Info":
-    st.title("👤 User Information")
-    st.text_input("Enter your name:", key="name")
-    st.selectbox("Select your gender:", ["Prefer not to say", "Male", "Female", "Other"], key="gender")
+    st.header("👤 User Information")
+    st.session_state.name = st.text_input("Name", st.session_state.name)
+    st.session_state.gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to say"], index=["Male", "Female", "Other", "Prefer not to say"].index(st.session_state.gender))
 
-    if st.button("Save and Continue"):
-        if st.session_state.name.strip() == "":
-            st.warning("Please enter your name to proceed.")
+    if st.button("Continue to Dashboard"):
+        if not st.session_state.name.strip():
+            st.warning("Please enter your name to continue.")
         else:
-            st.success("User information saved. You can navigate to the Dashboard now.")
             st.session_state.current_page = "Dashboard"
             st.experimental_rerun()
 
-# --- Dashboard Page ---
+# Dashboard Page
 elif page == "Dashboard":
-    st.title("🌿 Student Wellness Dashboard")
+    st.header("🌿 Student Wellness Dashboard")
     st.markdown("Write about your day or feelings, and get personalized mood analysis and wellness support.")
 
     with st.form("wellness_form"):
@@ -149,74 +107,121 @@ elif page == "Dashboard":
                 "High"
             )
             st.session_state.burnout_risk = risk
-
             st.success(f"Analysis done! Mood Score: {score} | Burnout Risk: {risk}")
 
+            # Rerun to update sidebar options
+            st.experimental_rerun()
+
+    # If burnout risk is Moderate/High, show continue button to quiz
     if st.session_state.burnout_risk in ["Moderate", "High"]:
         st.info("Based on your burnout risk, you can continue to the Quiz for a personalized plan.")
         if st.button("Continue to Quiz"):
             st.session_state.current_page = "Quiz"
             st.experimental_rerun()
 
-# --- Quiz Page ---
+    # Show last analysis if exists
+    if st.session_state.mood_score is not None:
+        st.markdown("---")
+        st.subheader("📊 Last Mood & Burnout Report")
+        emoji = "😄" if st.session_state.mood_score > 0.3 else "😐" if st.session_state.mood_score > 0.0 else "😞"
+        st.write(f"🧠 **Mood Score:** `{st.session_state.mood_score}` {emoji}")
+        st.metric("🧭 Burnout Risk Level", st.session_state.burnout_risk)
+
+# Quiz Page
 elif page == "Quiz":
+    st.header("📝 Burnout Quiz")
+
     if st.session_state.burnout_risk not in ["Moderate", "High"]:
-        st.warning("Quiz is available only if your burnout risk is Moderate or High. Please complete the Dashboard analysis first.")
+        st.warning("You need moderate or high burnout risk to take the quiz. Please complete the journal entry first.")
+        if st.button("Go to Dashboard"):
+            st.session_state.current_page = "Dashboard"
+            st.experimental_rerun()
     else:
-        st.title("📋 Quick Wellness Quiz")
+        # Simple quiz questions example
         with st.form("quiz_form"):
-            sleep_quality = st.selectbox(
-                "How would you rate your sleep quality?",
-                ["Good", "Average", "Poor"],
-                key="sleep_quality"
-            )
-            exercise_freq = st.selectbox(
-                "Do you exercise regularly?",
-                ["Yes", "No"],
-                key="exercise_freq"
-            )
+            q1 = st.radio("How often do you feel tired during the day?", ["Rarely", "Sometimes", "Often"], index=st.session_state.quiz_answers.get("q1", 0))
+            q2 = st.radio("How is your appetite lately?", ["Normal", "Reduced", "Increased"], index=st.session_state.quiz_answers.get("q2", 0))
+            q3 = st.radio("Do you find it hard to focus on tasks?", ["No", "Sometimes", "Yes"], index=st.session_state.quiz_answers.get("q3", 0))
+
             submitted = st.form_submit_button("Submit Quiz")
 
         if submitted:
-            st.session_state.quiz_answers = {
-                "sleep_quality": sleep_quality,
-                "exercise_freq": exercise_freq,
-            }
+            st.session_state.quiz_answers = {"q1": q1, "q2": q2, "q3": q3}
             st.session_state.quiz_submitted = True
-            st.success("Quiz answers saved! Now check your Personalized Plan page.")
-            # Move user to Personalized Plan page automatically
+            st.success("Quiz submitted! You can now view your personalized plan.")
             st.session_state.current_page = "Personalized Plan"
             st.experimental_rerun()
 
-# --- Personalized Plan Page ---
+# Personalized Plan Page
 elif page == "Personalized Plan":
-    if st.session_state.burnout_risk not in ["Moderate", "High"]:
-        st.warning("Personalized Plan is available only if your burnout risk is Moderate or High. Please complete the Dashboard analysis first.")
-    elif not st.session_state.quiz_submitted:
-        st.warning("Please complete the Quiz before viewing the Personalized Plan.")
+    st.header("🥗 Personalized Diet & Workout Plan")
+
+    if not st.session_state.quiz_submitted:
+        st.warning("Please complete the quiz first.")
+        if st.button("Go to Quiz"):
+            st.session_state.current_page = "Quiz"
+            st.experimental_rerun()
     else:
-        st.title("🍏 Personalized Diet & Workout Plan")
-        plan = get_personalized_plan(st.session_state.burnout_risk, st.session_state.quiz_answers)
-        st.subheader("Diet Plan")
-        st.write(plan["diet"])
-        st.subheader("Workout Plan")
-        st.write(plan["workout"])
+        # Example simple plan based on burnout risk and quiz answers
+        risk = st.session_state.burnout_risk
+        answers = st.session_state.quiz_answers
 
-# --- Feedback Page ---
-elif page == "Feedback":
-    st.title("💬 Feedback")
-    st.text_area("Share your feedback:", key="feedback_text", height=150)
+        st.write(f"**User:** {st.session_state.name} | **Burnout Risk:** {risk}")
+        st.write("Based on your mood and quiz answers, here is your personalized plan:")
 
-    if st.button("Submit Feedback"):
-        feedback = st.session_state.feedback_text.strip()
-        if feedback:
-            # Save feedback to a local file - in production, replace with DB or other storage
-            with open("feedback.txt", "a", encoding="utf-8") as f:
-                f.write(f"{datetime.now()} - {st.session_state.name}: {feedback}\n")
-            st.success("Thanks for your feedback!")
-            st.session_state.feedback_text = ""
+        if risk == "High":
+            st.subheader("Diet Plan for High Burnout Risk")
+            st.markdown("""
+            - Increase intake of antioxidants (fruits, vegetables).
+            - Stay hydrated.
+            - Avoid caffeine and sugar late in the day.
+            """)
+
+            st.subheader("Workout Plan for High Burnout Risk")
+            st.markdown("""
+            - Gentle yoga or stretching 20 min daily.
+            - Light walks.
+            - Avoid intense workouts until feeling better.
+            """)
+
+        elif risk == "Moderate":
+            st.subheader("Diet Plan for Moderate Burnout Risk")
+            st.markdown("""
+            - Balanced meals with protein and fiber.
+            - Include nuts and seeds.
+            - Moderate caffeine intake.
+            """)
+
+            st.subheader("Workout Plan for Moderate Burnout Risk")
+            st.markdown("""
+            - Moderate cardio (e.g., brisk walking 30 min).
+            - Strength training 2-3 times a week.
+            """)
+
         else:
-            st.warning("Please enter feedback before submitting.")
+            st.info("Your burnout risk is low. Keep up the good work!")
+
+        # Show quiz answers summary
+        st.markdown("---")
+        st.subheader("Your Quiz Answers")
+        for k, v in answers.items():
+            st.write(f"{k}: {v}")
+
+# Feedback Page
+elif page == "Feedback":
+    st.header("🗣️ Feedback")
+
+    feedback = st.text_area("Please leave your feedback or suggestions here:", height=150)
+    if st.button("Submit Feedback"):
+        if feedback.strip():
+            st.success("Thank you for your feedback!")
+            # Here you could add logic to save feedback to a file/db
+            # For demo, just clear text area
+            st.experimental_rerun()
+        else:
+            st.warning("Please write something before submitting feedback.")
+
+
 
 
 
