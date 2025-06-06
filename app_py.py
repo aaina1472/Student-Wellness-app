@@ -17,6 +17,7 @@ defaults = {
     "quiz_answers": {},
     "quiz_submitted": False,
     "feedback_text": "",
+    "current_page": "User Info",  # to programmatically switch pages
 }
 
 for key, val in defaults.items():
@@ -68,16 +69,25 @@ def get_personalized_plan(risk_level, quiz_answers):
 
 # --- Sidebar navigation ---
 st.sidebar.title("Navigation")
-menu_options = ["User Info", "Dashboard", "Quiz", "Personalized Plan", "Feedback"]
 
-# Disable quiz and plan menu items if no moderate/high burnout risk
-if st.session_state.burnout_risk not in ["Moderate", "High"]:
-    # remove "Quiz" and "Personalized Plan" from menu
-    filtered_options = [opt for opt in menu_options if opt not in ("Quiz", "Personalized Plan")]
-else:
-    filtered_options = menu_options
+def get_menu_options():
+    base = ["User Info", "Dashboard"]
+    # Show quiz and plan only if burnout risk moderate/high and journal analyzed
+    if st.session_state.burnout_risk in ["Moderate", "High"]:
+        base += ["Quiz"]
+        if st.session_state.quiz_submitted:
+            base += ["Personalized Plan"]
+    base += ["Feedback"]
+    return base
 
-page = st.sidebar.radio("Go to", filtered_options)
+menu_options = get_menu_options()
+
+# Set default page to session state current_page if valid, else first in menu_options
+if st.session_state.current_page not in menu_options:
+    st.session_state.current_page = menu_options[0]
+
+page = st.sidebar.radio("Go to", menu_options, index=menu_options.index(st.session_state.current_page))
+st.session_state.current_page = page  # sync page state
 
 # --- User Info Page ---
 if page == "User Info":
@@ -90,6 +100,8 @@ if page == "User Info":
             st.warning("Please enter your name to proceed.")
         else:
             st.success("User information saved. You can navigate to the Dashboard now.")
+            st.session_state.current_page = "Dashboard"
+            st.experimental_rerun()
 
 # --- Dashboard Page ---
 elif page == "Dashboard":
@@ -139,7 +151,12 @@ elif page == "Dashboard":
             st.session_state.burnout_risk = risk
 
             st.success(f"Analysis done! Mood Score: {score} | Burnout Risk: {risk}")
-            st.info("You can now go to the Quiz page (if available) or view your Personalized Plan.")
+
+    if st.session_state.burnout_risk in ["Moderate", "High"]:
+        st.info("Based on your burnout risk, you can continue to the Quiz for a personalized plan.")
+        if st.button("Continue to Quiz"):
+            st.session_state.current_page = "Quiz"
+            st.experimental_rerun()
 
 # --- Quiz Page ---
 elif page == "Quiz":
@@ -167,6 +184,9 @@ elif page == "Quiz":
             }
             st.session_state.quiz_submitted = True
             st.success("Quiz answers saved! Now check your Personalized Plan page.")
+            # Move user to Personalized Plan page automatically
+            st.session_state.current_page = "Personalized Plan"
+            st.experimental_rerun()
 
 # --- Personalized Plan Page ---
 elif page == "Personalized Plan":
@@ -197,6 +217,7 @@ elif page == "Feedback":
             st.session_state.feedback_text = ""
         else:
             st.warning("Please enter feedback before submitting.")
+
 
 
 
