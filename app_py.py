@@ -11,20 +11,28 @@ def analyze_mood(text):
     blob = TextBlob(str(text))
     return round(blob.sentiment.polarity, 2)
 
-# Function to reset session state variables
+# Initialize session state variables with defaults if not present
+for key, default_value in {
+    "journal_input": "",
+    "sleep_hours": 0.0,
+    "screen_time": 0.0,
+    "workout_done": "No",
+    "mood_score": None,
+    "burnout_risk": None,
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default_value
+
+# Function to reset inputs
 def reset_inputs():
-    st.session_state.journal_input = ""
-    st.session_state.sleep_hours = 0.0
-    st.session_state.screen_time = 0.0
-    st.session_state.workout_done = "No"
-    st.session_state.mood_score = None
-    st.session_state.burnout_risk = None
+    st.session_state["journal_input"] = ""
+    st.session_state["sleep_hours"] = 0.0
+    st.session_state["screen_time"] = 0.0
+    st.session_state["workout_done"] = "No"
+    st.session_state["mood_score"] = None
+    st.session_state["burnout_risk"] = None
 
-# Initialize session state variables if they don't exist
-if "journal_input" not in st.session_state:
-    reset_inputs()
-
-# Input widgets with session state for persistence and refresh functionality
+# Input widgets
 journal_input = st.text_area("📝 Write your journal entry here:", value=st.session_state.journal_input, key="journal_input")
 sleep_hours = st.number_input("🛌 How many hours did you sleep last night?", min_value=0.0, max_value=24.0, value=st.session_state.sleep_hours, step=0.5, key="sleep_hours")
 screen_time = st.number_input("📱 How many hours did you spend on screen today?", min_value=0.0, max_value=24.0, value=st.session_state.screen_time, step=0.5, key="screen_time")
@@ -36,7 +44,7 @@ with col1:
 with col2:
     refresh_clicked = st.button("Refresh")
 
-# Refresh button logic: reset inputs and clear outputs
+# Refresh button clears all inputs and reruns the app
 if refresh_clicked:
     reset_inputs()
     st.experimental_rerun()
@@ -57,7 +65,7 @@ if analyze_clicked:
         st.markdown("---")
         st.write(f"🧠 **Mood Score:** `{score}`")
 
-        # Determine burnout risk level (can also factor inputs here if desired)
+        # Determine burnout risk level
         if score > 0.3:
             burnout_risk = "Low"
         elif score > 0.0:
@@ -68,7 +76,7 @@ if analyze_clicked:
         st.session_state.burnout_risk = burnout_risk
         st.metric("🧭 Burnout Risk Level", burnout_risk)
 
-        # Recommend wellness content for Moderate or High risk
+        # Wellness recommendations for moderate or high burnout risk
         if burnout_risk in ["Moderate", "High"]:
             st.markdown("---")
             st.subheader("🧘 Wellness Recommendations")
