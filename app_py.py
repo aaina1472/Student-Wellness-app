@@ -32,6 +32,10 @@ def reset_inputs():
     st.session_state["mood_score"] = None
     st.session_state["burnout_risk"] = None
 
+if refresh_clicked:
+    reset_inputs()
+    st.experimental_rerun()
+
 # Input widgets
 journal_input = st.text_area("📝 Write your journal entry here:", value=st.session_state.journal_input, key="journal_input")
 sleep_hours = st.number_input("🛌 How many hours did you sleep last night?", min_value=0.0, max_value=24.0, value=st.session_state.sleep_hours, step=0.5, key="sleep_hours")
