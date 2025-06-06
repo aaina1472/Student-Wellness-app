@@ -39,33 +39,19 @@ with st.form("wellness_form"):
         key="sleep_hours"
     )
     st.number_input(
-        "📱 How many hours did you spend on screen today?",
+        "📱 How much was your Screen time today?",
         min_value=0.0,
         max_value=24.0,
         step=0.5,
         key="screen_time"
     )
     st.selectbox(
-        "🏋️ Workout today?",
+        "🏋️Did you do Workout today?",
         ["No", "Yes"],
         key="workout_done"
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        analyze_button = st.form_submit_button("Analyze")
-    with col2:
-        reset_button = st.form_submit_button("🔄 Reset")
-
-# Reset action
-if reset_button:
-    st.session_state.journal_input = ""
-    st.session_state.sleep_hours = 0.0
-    st.session_state.screen_time = 0.0
-    st.session_state.workout_done = ""
-    st.session_state.mood_score = None
-    st.session_state.burnout_risk = None
-    st.success("✅ Form has been reset.")
+    analyze_button = st.form_submit_button("Analyze")
 
 # Analyze action
 if analyze_button:
@@ -115,4 +101,5 @@ if analyze_button:
             st.success("✅ You're doing great! Keep journaling to maintain emotional well-being.")
     else:
         st.warning("⚠️ Please write something in your journal before analyzing.")
+
 
