@@ -3,7 +3,7 @@ from textblob import TextBlob
 
 st.set_page_config(page_title="Student Wellness App", layout="centered")
 
-# --- SESSION STATE INITIALIZATION ---
+# --- INITIALIZE SESSION STATE ---
 if "page" not in st.session_state:
     st.session_state.page = "User Info"
     st.session_state.user_info = {}
@@ -13,20 +13,25 @@ if "page" not in st.session_state:
     st.session_state.workout_done = "No"
     st.session_state.mood_score = None
     st.session_state.burnout_risk = None
-    st.session_state.quiz_answers = {}
     st.session_state.quiz_complete = False
 
-# --- SIDEBAR NAVIGATION ---
-st.sidebar.title("Navigation")
-pages = ["User Info", "Dashboard", "Quiz", "Personalized Plan", "Feedback"]
-# Using a key can sometimes help with state issues
-st.session_state.page = st.sidebar.radio("Go to", pages, key="nav_radio_main")
+# --- SMART SIDEBAR NAVIGATION ---
+sidebar_options = ["User Info"]
 
+if st.session_state.user_info:
+    sidebar_options.append("Dashboard")
 
-# --- PAGE CONTENT ---
+if st.session_state.burnout_risk in ["Moderate", "High"]:
+    sidebar_options.append("Quiz")
 
-# Page 1: User Info
-if st.session_state.page == "User Info":
+if st.session_state.quiz_complete:
+    sidebar_options.append("Personalized Plan")
+    sidebar_options.append("Feedback")
+
+selected_page = st.sidebar.radio("Go to", sidebar_options, key="nav_radio_main")
+
+# --- PAGE 1: USER INFO ---
+if selected_page == "User Info":
     st.title("👤 User Information")
     st.write("Please enter your details to get started.")
     with st.form("user_info_form"):
@@ -37,16 +42,13 @@ if st.session_state.page == "User Info":
 
         if submitted and name:
             st.session_state.user_info = {"name": name, "gender": gender, "age": age}
-            st.success("Information saved! You can now proceed to the 'Dashboard'.")
+            st.success("Information saved! Go to Dashboard from sidebar.")
 
-# Page 2: Dashboard
-elif st.session_state.page == "Dashboard":
-    if not st.session_state.user_info:
-        st.warning("Please complete the User Information on the 'User Info' page before accessing the dashboard.")
-        st.stop()
-
+# --- PAGE 2: DASHBOARD ---
+elif selected_page == "Dashboard":
     st.title(f"🌿 Welcome, {st.session_state.user_info.get('name', 'User')}!")
     st.header("Student Wellness Dashboard")
+
     with st.form("wellness_form"):
         st.text_area("📝 Journal Entry: How are you feeling today?", key="journal_input", height=150)
         st.slider("🛌 Last night's sleep (hours)", min_value=0.0, max_value=24.0, step=0.5, key="sleep_hours")
@@ -71,43 +73,61 @@ elif st.session_state.page == "Dashboard":
             st.metric("🧭 Burnout Risk Level", risk)
 
             if risk in ["Moderate", "High"]:
-                st.info("Your burnout risk is elevated. Please navigate to the 'Quiz' for a deeper analysis.")
+                st.info("Your burnout risk is elevated. Please go to the Quiz section.")
         else:
             st.warning("Please write a journal entry to analyze your mood.")
 
-# Page 3: Quiz
-elif st.session_state.page == "Quiz":
+# --- PAGE 3: QUIZ ---
+elif selected_page == "Quiz":
     if st.session_state.burnout_risk not in ["Moderate", "High"]:
-        st.warning("The quiz is available only if your burnout risk is 'Moderate' or 'High'.")
-        st.info("Please complete the analysis on the 'Dashboard' page first to determine your risk level.")
+        st.warning("Quiz is only for Moderate or High burnout risk.")
         st.stop()
 
     st.title("📝 Burnout Risk Quiz")
     with st.form("quiz_form"):
-        st.write("Answer these questions based on how you've felt over the last two weeks.")
-        # ... (rest of the quiz code)
+        q1 = st.selectbox("Do you feel emotionally drained?", ["Never", "Sometimes", "Often", "Always"])
+        q2 = st.selectbox("Do you find it hard to concentrate?", ["Never", "Sometimes", "Often", "Always"])
+        q3 = st.selectbox("Do you enjoy your daily routine?", ["Yes", "Somewhat", "No"])
+        q4 = st.selectbox("How is your appetite recently?", ["Normal", "Less", "More than usual"])
+        q5 = st.selectbox("Do you feel isolated or lonely?", ["No", "Sometimes", "Frequently"])
+
         quiz_submit = st.form_submit_button("Submit Quiz")
 
-        if quiz_submit:
-            st.session_state.quiz_complete = True
-            st.success("Quiz submitted! Please select 'Personalized Plan' from the sidebar.")
+    if quiz_submit:
+        st.session_state.quiz_complete = True
+        st.success("Quiz submitted! Go to 'Personalized Plan' from sidebar.")
 
-# Page 4: Personalized Plan
-elif st.session_state.page == "Personalized Plan":
+# --- PAGE 4: PERSONALIZED PLAN ---
+elif selected_page == "Personalized Plan":
     if not st.session_state.quiz_complete:
-        st.warning("Please complete the 'Quiz' to generate your personalized plan.")
+        st.warning("Please complete the quiz first.")
         st.stop()
+
     st.title("🍎 Personalized Diet & Workout Plan")
-    # ... (rest of the plan code)
+    st.markdown("Based on your quiz responses and burnout level:")
 
-# Page 5: Feedback
-elif st.session_state.page == "Feedback":
-    if not st.session_state.quiz_complete:
-        st.warning("We'd love your feedback after you have gone through the full process.")
-        st.info("Please complete the 'Quiz' and view your 'Personalized Plan' first.")
-        st.stop()
-    st.title("🗣️ Feedback")
-    # ... (rest of the feedback code)
+    st.subheader("🥗 Diet Suggestions")
+    st.markdown("- Eat more fruits, vegetables, and whole grains.")
+    st.markdown("- Reduce sugar and caffeine if feeling anxious.")
+    st.markdown("- Drink at least 2-3 liters of water per day.")
+
+    st.subheader("🏃 Workout Plan")
+    st.markdown("- Try light exercises like yoga or walking.")
+    st.markdown("- 20–30 minutes of physical activity daily.")
+    st.markdown("- Avoid intense workouts if you're feeling drained.")
+
+    st.subheader("🎧 Mental Wellness Resources")
+    st.markdown("**Guided Meditation:**")
+    st.video("https://www.youtube.com/watch?v=inpok4MKVLM")
+    st.markdown("**Podcast:** [The Happiness Lab](https://www.happinesslab.fm/)")
+
+# --- PAGE 5: FEEDBACK ---
+elif selected_page == "Feedback":
+    st.title("🗣️ Your Feedback")
+    feedback = st.text_area("How was your experience using this app?")
+    if st.button("Submit Feedback"):
+        st.success("Thank you for your feedback!")
+
 
 
 
