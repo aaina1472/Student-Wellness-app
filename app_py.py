@@ -167,7 +167,58 @@ elif page == "Quiz":
                 "sleep": st.session_state.q4,
                 "exercise": st.session_state.q5,
             }
-            st.session_state.quiz_answers =
+            st.session_state.quiz_answers = answers
+
+            risk = st.session_state.burnout_risk
+            plan = ""
+            if risk == "High":
+                plan = """
+                ### 🥗 Personalized Diet Plan for High Burnout Risk
+                - Increase intake of omega-3 fatty acids (fish, flaxseed)
+                - Eat antioxidant-rich fruits and veggies
+                - Stay hydrated
+                
+                ### 🏋️‍♂️ Workout Routine
+                - Light yoga/stretching daily
+                - Short walks to reduce stress
+                - Avoid high-intensity workouts until recovery
+                """
+            elif risk == "Moderate":
+                plan = """
+                ### 🥗 Personalized Diet Plan for Moderate Burnout Risk
+                - Balanced meals with proteins, carbs, and fats
+                - Include nuts and seeds for energy
+                - Moderate caffeine intake
+                
+                ### 🏋️‍♂️ Workout Routine
+                - Moderate cardio 3-4 times a week
+                - Strength training twice a week
+                - Include rest days
+                """
+            else:
+                plan = "You have low burnout risk; maintain your healthy lifestyle!"
+
+            st.session_state.personalized_plan = plan
+            st.success("✅ Quiz submitted! Your personalized plan is ready.")
+
+elif page == "Personalized Plan":
+    if not st.session_state.personalized_plan:
+        st.warning("Please complete the quiz first to get your personalized plan.")
+    else:
+        st.title("📋 Your Personalized Wellness Plan")
+        st.markdown(st.session_state.personalized_plan)
+
+elif page == "Feedback":
+    st.title("📝 Your Feedback")
+    feedback = st.text_area("Please share your feedback about the app:")
+
+    if st.button("Submit Feedback"):
+        if feedback.strip():
+            st.success("Thank you for your feedback!")
+            # Save feedback externally if you want
+        else:
+            st.warning("Please enter some feedback before submitting.")
+
 
 
 
