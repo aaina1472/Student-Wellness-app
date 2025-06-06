@@ -3,7 +3,7 @@ from textblob import TextBlob
 
 st.set_page_config(page_title="Student Wellness App", layout="centered")
 
-# --- INITIALIZE SESSION STATE ---
+# --- SESSION STATE INITIALIZATION ---
 if "page" not in st.session_state:
     st.session_state.page = "User Info"
     st.session_state.user_info = {}
@@ -15,118 +15,95 @@ if "page" not in st.session_state:
     st.session_state.burnout_risk = None
     st.session_state.quiz_complete = False
 
-# --- SMART SIDEBAR NAVIGATION ---
-sidebar_options = ["User Info"]
+# --- SIDEBAR NAVIGATION ---
+st.sidebar.title("Navigation")
+pages = ["User Info", "Dashboard", "Quiz", "Personalized Plan", "Feedback"]
+st.session_state.page = st.sidebar.radio("Go to", pages)
 
-if st.session_state.user_info:
-    sidebar_options.append("Dashboard")
-
-if st.session_state.burnout_risk in ["Moderate", "High"]:
-    sidebar_options.append("Quiz")
-
-if st.session_state.quiz_complete:
-    sidebar_options.append("Personalized Plan")
-    sidebar_options.append("Feedback")
-
-selected_page = st.sidebar.radio("Go to", sidebar_options, key="nav_radio_main")
-
-# --- PAGE 1: USER INFO ---
-if selected_page == "User Info":
+# --- PAGE: USER INFO ---
+if st.session_state.page == "User Info":
     st.title("👤 User Information")
-    st.write("Please enter your details to get started.")
     with st.form("user_info_form"):
         name = st.text_input("Name", value=st.session_state.user_info.get("name", ""))
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-        age = st.number_input("Age", min_value=10, max_value=100, value=st.session_state.user_info.get("age", 18))
+        age = st.number_input("Age", min_value=10, max_value=100, value=18)
         submitted = st.form_submit_button("Save Information")
-
         if submitted and name:
             st.session_state.user_info = {"name": name, "gender": gender, "age": age}
-            st.success("Information saved! Go to Dashboard from sidebar.")
+            st.success("✅ Information saved!")
 
-# --- PAGE 2: DASHBOARD ---
-elif selected_page == "Dashboard":
-    st.title(f"🌿 Welcome, {st.session_state.user_info.get('name', 'User')}!")
-    st.header("Student Wellness Dashboard")
-
+# --- PAGE: DASHBOARD ---
+elif st.session_state.page == "Dashboard":
+    st.title("🌿 Wellness Dashboard")
     with st.form("wellness_form"):
-        st.text_area("📝 Journal Entry: How are you feeling today?", key="journal_input", height=150)
-        st.slider("🛌 Last night's sleep (hours)", min_value=0.0, max_value=24.0, step=0.5, key="sleep_hours")
-        st.slider("📱 Today's screen time (hours)", min_value=0.0, max_value=24.0, step=0.5, key="screen_time")
-        st.selectbox("🏋️ Did you workout today?", ["No", "Yes"], key="workout_done")
-        analyze_button = st.form_submit_button("Analyze My Day")
+        journal = st.text_area("📝 How are you feeling today?", key="journal_input")
+        st.slider("😴 Sleep (hours)", 0.0, 24.0, key="sleep_hours")
+        st.slider("📱 Screen Time (hours)", 0.0, 24.0, key="screen_time")
+        st.selectbox("🏋️‍♂️ Workout Today?", ["No", "Yes"], key="workout_done")
+        analyze = st.form_submit_button("Analyze My Day")
+    
+    if analyze and journal.strip():
+        score = round(TextBlob(journal).sentiment.polarity, 2)
+        st.session_state.mood_score = score
+        risk = "Low" if score > 0.3 else "Moderate" if score > 0.0 else "High"
+        st.session_state.burnout_risk = risk
 
-    if analyze_button:
-        journal = st.session_state.journal_input.strip()
-        if journal:
-            blob = TextBlob(journal)
-            score = round(blob.sentiment.polarity, 2)
-            st.session_state.mood_score = score
-            risk = "Low" if score > 0.3 else "Moderate" if score > 0.0 else "High"
-            st.session_state.burnout_risk = risk
+        st.subheader("📊 Mood Analysis")
+        st.write(f"🧠 Mood Score: `{score}`")
+        st.metric("🔥 Burnout Risk", risk)
 
-            st.markdown("---")
-            st.subheader("📊 Mood & Burnout Report")
-            emoji = "😄" if score > 0.3 else "😐" if score > 0.0 else "😞"
-            st.write(f"🧠 **Mood Score:** `{score}` {emoji}")
-            st.progress((score + 1) / 2)
-            st.metric("🧭 Burnout Risk Level", risk)
+        if risk in ["Moderate", "High"]:
+            st.info("Your burnout risk is elevated. Please take the quiz for deeper analysis.")
+    elif analyze:
+        st.warning("Please write something to analyze.")
 
-            if risk in ["Moderate", "High"]:
-                st.info("Your burnout risk is elevated. Please go to the Quiz section.")
-        else:
-            st.warning("Please write a journal entry to analyze your mood.")
-
-# --- PAGE 3: QUIZ ---
-elif selected_page == "Quiz":
+# --- PAGE: QUIZ ---
+elif st.session_state.page == "Quiz":
+    st.title("📝 Burnout Assessment Quiz")
     if st.session_state.burnout_risk not in ["Moderate", "High"]:
-        st.warning("Quiz is only for Moderate or High burnout risk.")
-        st.stop()
+        st.info("This quiz is most useful when your burnout risk is Moderate or High.")
 
-    st.title("📝 Burnout Risk Quiz")
     with st.form("quiz_form"):
-        q1 = st.selectbox("Do you feel emotionally drained?", ["Never", "Sometimes", "Often", "Always"])
-        q2 = st.selectbox("Do you find it hard to concentrate?", ["Never", "Sometimes", "Often", "Always"])
-        q3 = st.selectbox("Do you enjoy your daily routine?", ["Yes", "Somewhat", "No"])
-        q4 = st.selectbox("How is your appetite recently?", ["Normal", "Less", "More than usual"])
-        q5 = st.selectbox("Do you feel isolated or lonely?", ["No", "Sometimes", "Frequently"])
-
+        q1 = st.slider("How often do you feel tired?", 1, 5, 3)
+        q2 = st.slider("How often do you feel unmotivated?", 1, 5, 3)
+        q3 = st.slider("How often do you feel overwhelmed?", 1, 5, 3)
         quiz_submit = st.form_submit_button("Submit Quiz")
+        if quiz_submit:
+            st.session_state.quiz_complete = True
+            st.success("✅ Quiz complete! Visit the Personalized Plan tab.")
 
-    if quiz_submit:
-        st.session_state.quiz_complete = True
-        st.success("Quiz submitted! Go to 'Personalized Plan' from sidebar.")
-
-# --- PAGE 4: PERSONALIZED PLAN ---
-elif selected_page == "Personalized Plan":
+# --- PAGE: PLAN ---
+elif st.session_state.page == "Personalized Plan":
+    st.title("🍏 Personalized Diet & Workout Plan")
     if not st.session_state.quiz_complete:
-        st.warning("Please complete the quiz first.")
-        st.stop()
+        st.info("Fill the Quiz tab first for more accurate plans.")
 
-    st.title("🍎 Personalized Diet & Workout Plan")
-    st.markdown("Based on your quiz responses and burnout level:")
+    st.markdown("""
+    ### 🥗 Diet Recommendations
+    - Include fresh fruits and veggies daily
+    - Drink 8+ glasses of water
+    - Avoid processed and fried food
 
-    st.subheader("🥗 Diet Suggestions")
-    st.markdown("- Eat more fruits, vegetables, and whole grains.")
-    st.markdown("- Reduce sugar and caffeine if feeling anxious.")
-    st.markdown("- Drink at least 2-3 liters of water per day.")
+    ### 🏃 Workout Suggestions
+    - 15-20 min of yoga or walking
+    - Try deep breathing/stretching exercises
 
-    st.subheader("🏃 Workout Plan")
-    st.markdown("- Try light exercises like yoga or walking.")
-    st.markdown("- 20–30 minutes of physical activity daily.")
-    st.markdown("- Avoid intense workouts if you're feeling drained.")
+    ### 🧠 Mental Wellness
+    - Practice mindfulness or journaling
+    - Try these:
+        - [Relaxing Music 🎵](https://www.youtube.com/watch?v=2OEL4P1Rz04)
+        - [Meditation Video 🧘](https://www.youtube.com/watch?v=inpok4MKVLM)
+        - [The Happiness Lab Podcast](https://www.happinesslab.fm/)
+    """)
 
-    st.subheader("🎧 Mental Wellness Resources")
-    st.markdown("**Guided Meditation:**")
-    st.video("https://www.youtube.com/watch?v=inpok4MKVLM")
-    st.markdown("**Podcast:** [The Happiness Lab](https://www.happinesslab.fm/)")
-
-# --- PAGE 5: FEEDBACK ---
-elif selected_page == "Feedback":
-    st.title("🗣️ Your Feedback")
-    feedback = st.text_area("How was your experience using this app?")
+# --- PAGE: FEEDBACK ---
+elif st.session_state.page == "Feedback":
+    st.title("🗣️ Feedback")
+    st.write("We'd love to hear from you!")
+    feedback = st.text_area("💬 Share your thoughts or suggestions:")
     if st.button("Submit Feedback"):
-        st.success("Thank you for your feedback!")
+        st.success("✅ Thank you for your feedback!")
+
 
 
 
