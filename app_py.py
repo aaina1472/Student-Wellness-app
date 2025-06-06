@@ -3,106 +3,99 @@ from textblob import TextBlob
 
 st.set_page_config(page_title="Student Wellness App", layout="centered")
 
-# --- SESSION STATE INITIALIZATION ---
-if "page" not in st.session_state:
-    st.session_state.page = "User Info"
-    st.session_state.user_info = {}
-    st.session_state.journal_input = ""
-    st.session_state.sleep_hours = 8.0
-    st.session_state.screen_time = 4.0
-    st.session_state.workout_done = "No"
-    st.session_state.mood_score = None
-    st.session_state.burnout_risk = None
-    st.session_state.quiz_complete = False
+# --- Sidebar Navigation ---
+page = st.sidebar.radio("Navigation", ["User Info", "Mood Analyzer", "Quiz", "Personalized Plan", "Feedback"])
 
-# --- SIDEBAR NAVIGATION ---
-st.sidebar.title("Navigation")
-pages = ["User Info", "Dashboard", "Quiz", "Personalized Plan", "Feedback"]
-st.session_state.page = st.sidebar.radio("Go to", pages)
-
-# --- PAGE: USER INFO ---
-if st.session_state.page == "User Info":
+# --- Page: User Info ---
+if page == "User Info":
     st.title("👤 User Information")
     with st.form("user_info_form"):
-        name = st.text_input("Name", value=st.session_state.user_info.get("name", ""))
+        name = st.text_input("Name")
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
         age = st.number_input("Age", min_value=10, max_value=100, value=18)
         submitted = st.form_submit_button("Save Information")
-        if submitted and name:
+
+    if submitted:
+        if name.strip() == "":
+            st.warning("Please enter your name.")
+        else:
+            st.success(f"Information saved! Welcome, {name}.")
+
+            # Save info to session state for later use if needed
             st.session_state.user_info = {"name": name, "gender": gender, "age": age}
-            st.success("✅ Information saved!")
 
-# --- PAGE: DASHBOARD ---
-elif st.session_state.page == "Dashboard":
-    st.title("🌿 Wellness Dashboard")
-    with st.form("wellness_form"):
-        journal = st.text_area("📝 How are you feeling today?", key="journal_input")
-        st.slider("😴 Sleep (hours)", 0.0, 24.0, key="sleep_hours")
-        st.slider("📱 Screen Time (hours)", 0.0, 24.0, key="screen_time")
-        st.selectbox("🏋️‍♂️ Workout Today?", ["No", "Yes"], key="workout_done")
-        analyze = st.form_submit_button("Analyze My Day")
-    
-    if analyze and journal.strip():
-        score = round(TextBlob(journal).sentiment.polarity, 2)
-        st.session_state.mood_score = score
-        risk = "Low" if score > 0.3 else "Moderate" if score > 0.0 else "High"
-        st.session_state.burnout_risk = risk
+# --- Page: Mood Analyzer ---
+elif page == "Mood Analyzer":
+    st.title("🌿 Student Wellness Dashboard")
+    if "user_info" in st.session_state:
+        st.write(f"Welcome back, **{st.session_state.user_info['name']}!**")
+    else:
+        st.info("Please enter your information in the User Info tab for a personalized experience.")
 
-        st.subheader("📊 Mood Analysis")
-        st.write(f"🧠 Mood Score: `{score}`")
-        st.metric("🔥 Burnout Risk", risk)
+    st.markdown("Write about your day or feelings, and get personalized mood analysis and wellness support.")
 
-        if risk in ["Moderate", "High"]:
-            st.info("Your burnout risk is elevated. Please take the quiz for deeper analysis.")
-    elif analyze:
-        st.warning("Please write something to analyze.")
+    def analyze_mood(text):
+        blob = TextBlob(str(text))
+        return round(blob.sentiment.polarity, 2)
 
-# --- PAGE: QUIZ ---
-elif st.session_state.page == "Quiz":
-    st.title("📝 Burnout Assessment Quiz")
-    if st.session_state.burnout_risk not in ["Moderate", "High"]:
-        st.info("This quiz is most useful when your burnout risk is Moderate or High.")
+    journal_input = st.text_area("📝 Write your journal entry here:")
 
-    with st.form("quiz_form"):
-        q1 = st.slider("How often do you feel tired?", 1, 5, 3)
-        q2 = st.slider("How often do you feel unmotivated?", 1, 5, 3)
-        q3 = st.slider("How often do you feel overwhelmed?", 1, 5, 3)
-        quiz_submit = st.form_submit_button("Submit Quiz")
-        if quiz_submit:
-            st.session_state.quiz_complete = True
-            st.success("✅ Quiz complete! Visit the Personalized Plan tab.")
+    if st.button("Analyze My Mood"):
+        if journal_input.strip():
+            score = analyze_mood(journal_input)
+            st.write(f"🧠 **Mood Score:** `{score}`")
 
-# --- PAGE: PLAN ---
-elif st.session_state.page == "Personalized Plan":
-    st.title("🍏 Personalized Diet & Workout Plan")
-    if not st.session_state.quiz_complete:
-        st.info("Fill the Quiz tab first for more accurate plans.")
+            if score > 0.3:
+                burnout_risk = "Low"
+            elif score > 0.0:
+                burnout_risk = "Moderate"
+            else:
+                burnout_risk = "High"
 
-    st.markdown("""
-    ### 🥗 Diet Recommendations
-    - Include fresh fruits and veggies daily
-    - Drink 8+ glasses of water
-    - Avoid processed and fried food
+            st.metric("🧭 Burnout Risk Level", burnout_risk)
 
-    ### 🏃 Workout Suggestions
-    - 15-20 min of yoga or walking
-    - Try deep breathing/stretching exercises
+            if burnout_risk in ["Moderate", "High"]:
+                st.markdown("---")
+                st.subheader("🧘 Wellness Recommendations")
 
-    ### 🧠 Mental Wellness
-    - Practice mindfulness or journaling
-    - Try these:
-        - [Relaxing Music 🎵](https://www.youtube.com/watch?v=2OEL4P1Rz04)
-        - [Meditation Video 🧘](https://www.youtube.com/watch?v=inpok4MKVLM)
-        - [The Happiness Lab Podcast](https://www.happinesslab.fm/)
-    """)
+                if burnout_risk == "High":
+                    st.error("⚠️ High Burnout Risk Detected. Please take care of your mental health.")
 
-# --- PAGE: FEEDBACK ---
-elif st.session_state.page == "Feedback":
+                st.markdown("### 🎵 Relaxing Music")
+                st.markdown("""
+                <iframe width="100%" height="80" src="https://www.youtube.com/embed/2OEL4P1Rz04?autoplay=1&loop=1&playlist=2OEL4P1Rz04" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                """, unsafe_allow_html=True)
+
+                st.markdown("### 🧘 Guided Meditation")
+                st.video("https://www.youtube.com/watch?v=inpok4MKVLM")
+
+                st.markdown("### 🎧 Uplifting Podcasts")
+                st.markdown("""
+                - [The Daily Shine – Mental Health & Mindfulness](https://www.theshineapp.com/)
+                - [The Happiness Lab with Dr. Laurie Santos](https://www.happinesslab.fm/)
+                - [Mindful Muslim Podcast](https://mindful-muslimah.com/podcast/)
+                """)
+
+            else:
+                st.success("✅ You're doing great! Keep journaling to maintain emotional well-being.")
+        else:
+            st.warning("Please enter some text to analyze.")
+
+# --- Page: Quiz ---
+elif page == "Quiz":
+    st.title("📝 Burnout Risk Quiz")
+    st.write("Here you can add your quiz questions and logic...")
+
+# --- Page: Personalized Plan ---
+elif page == "Personalized Plan":
+    st.title("🍎 Personalized Diet & Workout Plan")
+    st.write("Here you can show personalized plans based on quiz or mood score...")
+
+# --- Page: Feedback ---
+elif page == "Feedback":
     st.title("🗣️ Feedback")
-    st.write("We'd love to hear from you!")
-    feedback = st.text_area("💬 Share your thoughts or suggestions:")
-    if st.button("Submit Feedback"):
-        st.success("✅ Thank you for your feedback!")
+    st.write("Let users send feedback here...")
+
 
 
 
