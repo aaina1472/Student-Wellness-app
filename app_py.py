@@ -30,13 +30,18 @@ def go_next():
 # ========== Page 1: User Info ==========
 if st.session_state.current_page == 'User Info':
     st.title("🧑 User Information")
+    st.markdown("Please fill in your details to get started 👇")
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
+    gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
+    st.write("You selected:", gender)
+
 
     if st.button("Continue to Dashboard"):
         if name:
             st.session_state.name = name
             st.session_state.age = age
+            st.session_state.gender = gender
             go_next()
         else:
             st.warning("Please enter your name to continue.")
@@ -44,14 +49,20 @@ if st.session_state.current_page == 'User Info':
 # ========== Page 2: Dashboard ==========
 elif st.session_state.current_page == 'Dashboard':
     st.title("📊 Mood Dashboard")
-    uploaded_file = st.file_uploader("Upload your journal CSV", type=["csv"])
+
+
+    # Ask user to type their journal entry
+    journal_entry = st.text_area("✍️ Write your journal entry here:")
+
+    if journal_entry:
+    # Create a DataFrame to simulate the uploaded CSV
+    df = pd.DataFrame({'journal_entry': [journal_entry]})
     
-    if uploaded_file:
-        try:
-            df = pd.read_csv(uploaded_file)
-            if 'journal_entry' not in df.columns:
-                st.error("CSV must contain a 'journal_entry' column.")
-            else:
+    # Now you can use this df just like before
+    st.write("Your entry has been recorded:")
+    st.dataframe(df)
+
+  
                 def analyze_mood(text):
                     return TextBlob(str(text)).sentiment.polarity
                 
@@ -73,9 +84,6 @@ elif st.session_state.current_page == 'Dashboard':
 
                 if st.button("Continue to Suggestions"):
                     go_next()
-
-        except Exception as e:
-            st.error(f"Error reading file: {e}")
 
 # ========== Page 3: Suggestions ==========
 elif st.session_state.current_page == 'Suggestions':
