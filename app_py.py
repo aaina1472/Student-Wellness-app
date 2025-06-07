@@ -61,14 +61,11 @@ elif st.session_state.current_page == 'Dashboard':
     # Now you can use this df just like before
     st.write("Your entry has been recorded:")
     st.dataframe(df)
-
-  
-                def analyze_mood(text):
-                    return TextBlob(str(text)).sentiment.polarity
+        def analyze_mood(text):
+        return TextBlob(str(text)).sentiment.polarity
                 
-                df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
-                avg_mood = df['Mood Score'].mean()
-
+        df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
+        avg_mood = df['Mood Score'].mean()
                 if avg_mood > 0.3:
                     risk = "Low"
                 elif avg_mood > 0.0:
