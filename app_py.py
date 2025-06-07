@@ -56,7 +56,7 @@ elif st.session_state.current_page == 'Dashboard':
 
     if journal_entry:
     # Create a DataFrame to simulate the uploaded CSV
-    df = pd.DataFrame({'journal_entry': [journal_entry]})
+        df = pd.DataFrame({'journal_entry': [journal_entry]})
     
     # Now you can use this df just like before
     st.write("Your entry has been recorded:")
