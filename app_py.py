@@ -23,7 +23,7 @@ for i, page in enumerate(pages):
 
 # Page Navigator
 def go_next():
-    next_idx = current_idx + 1
+    next_idx = pages.index(st.session_state.current_page) + 1
     if next_idx < len(pages):
         st.session_state.current_page = pages[next_idx]
 
@@ -35,7 +35,6 @@ if st.session_state.current_page == 'User Info':
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
     st.write("You selected:", gender)
-
 
     if st.button("Continue to Dashboard"):
         if name:
@@ -50,37 +49,39 @@ if st.session_state.current_page == 'User Info':
 elif st.session_state.current_page == 'Dashboard':
     st.title("📊 Mood Dashboard")
 
-
     # Ask user to type their journal entry
     journal_entry = st.text_area("✍️ Write your journal entry here:")
 
     if journal_entry:
-    # Create a DataFrame to simulate the uploaded CSV
+        # Create a DataFrame to simulate the uploaded CSV
         df = pd.DataFrame({'journal_entry': [journal_entry]})
-    
-    # Now you can use this df just like before
-    st.write("Your entry has been recorded:")
-    st.dataframe(df)
-    def analyze_mood(text):
-    return TextBlob(str(text)).sentiment.polarity
-                
+
+        # Display user entry
+        st.write("Your entry has been recorded:")
+        st.dataframe(df)
+
+        # Mood analysis
+        def analyze_mood(text):
+            return TextBlob(str(text)).sentiment.polarity
+
         df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
         avg_mood = df['Mood Score'].mean()
-                if avg_mood > 0.3:
-                    risk = "Low"
-                elif avg_mood > 0.0:
-                    risk = "Moderate"
-                else:
-                    risk = "High"
 
-                st.metric("Average Mood Score", f"{avg_mood:.2f}")
-                st.metric("Burnout Risk", risk)
+        if avg_mood > 0.3:
+            risk = "Low"
+        elif avg_mood > 0.0:
+            risk = "Moderate"
+        else:
+            risk = "High"
 
-                st.session_state.avg_mood = avg_mood
-                st.session_state.risk = risk
+        st.metric("Average Mood Score", f"{avg_mood:.2f}")
+        st.metric("Burnout Risk", risk)
 
-                if st.button("Continue to Suggestions"):
-                    go_next()
+        st.session_state.avg_mood = avg_mood
+        st.session_state.risk = risk
+
+        if st.button("Continue to Suggestions"):
+            go_next()
 
 # ========== Page 3: Suggestions ==========
 elif st.session_state.current_page == 'Suggestions':
@@ -106,6 +107,7 @@ elif st.session_state.current_page == 'Feedback':
     feedback = st.text_area("How was your experience?")
     if st.button("Submit Feedback"):
         st.success("Thanks for your feedback! 🌟")
+
 
 
 
