@@ -2,10 +2,9 @@ import streamlit as st
 import pandas as pd
 from textblob import TextBlob
 import os
-
+import csv  # Moved here
 # Create folders if not exist
 os.makedirs("data", exist_ok=True)
-
 
 st.set_page_config(page_title="Mood Predictor App", layout="centered")
 
@@ -47,12 +46,11 @@ if st.session_state.current_page == 'User Info':
             st.session_state.age = age
             st.session_state.gender = gender
 
-            
-        # Save user info
-        import csv
-        with open("data/user_info.csv", "a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([name, age, gender])
+            # Save user info
+            with open("data/user_info.csv", "a", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([name, age, gender])
+
             go_next()
         else:
             st.warning("Please enter your name to continue.")
@@ -61,18 +59,14 @@ if st.session_state.current_page == 'User Info':
 elif st.session_state.current_page == 'Dashboard':
     st.title("📊 Mood Dashboard")
 
-    # Ask user to type their journal entry
     journal_entry = st.text_area("✍️ Write your journal entry here:")
 
     if journal_entry:
-        # Create a DataFrame to simulate the uploaded CSV
         df = pd.DataFrame({'journal_entry': [journal_entry]})
 
-        # Display user entry
         st.write("Your entry has been recorded:")
         st.dataframe(df)
 
-        # Mood analysis
         def analyze_mood(text):
             return TextBlob(str(text)).sentiment.polarity
 
@@ -91,6 +85,11 @@ elif st.session_state.current_page == 'Dashboard':
 
         st.session_state.avg_mood = avg_mood
         st.session_state.risk = risk
+
+        # Save journal entry
+        with open("data/journal_entries.csv", "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([st.session_state.name, journal_entry, avg_mood])
 
         if st.button("Continue to Suggestions"):
             go_next()
