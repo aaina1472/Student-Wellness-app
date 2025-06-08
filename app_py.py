@@ -21,8 +21,9 @@ st.set_page_config(page_title="Mood Predictor App", layout="centered")
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'User Info'
 
-# Sidebar Navigation
+# Sidebar Navigation (locked step-by-step)
 st.sidebar.title("Navigation")
+
 pages = ["User Info", "Dashboard", "Suggestions", "Feedback"]
 current_idx = pages.index(st.session_state.current_page)
 
@@ -33,6 +34,7 @@ for i, page in enumerate(pages):
     else:
         st.sidebar.markdown(f"{i+1}. {page} 🔒")
 
+# Page Navigator
 def go_next():
     next_idx = pages.index(st.session_state.current_page) + 1
     if next_idx < len(pages):
@@ -43,13 +45,20 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load animation
-    calm_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_dyqxkeib.json")
-    if calm_animation:
-        st_lottie(calm_animation, height=240, key="calm_anim")
-    else:
-        st.error("⚠️ Animation failed to load.")
+    # Load meditation and study animations
+    meditation_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    study_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jcikwtux.json")
 
+    # Show animations side by side using columns
+    col1, col2 = st.columns(2)
+    with col1:
+        if meditation_animation:
+            st_lottie(meditation_animation, height=180, key="meditation")
+    with col2:
+        if study_animation:
+            st_lottie(study_animation, height=180, key="study")
+
+    # Form Inputs
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
@@ -60,6 +69,7 @@ if st.session_state.current_page == 'User Info':
             st.session_state.age = age
             st.session_state.gender = gender
 
+            # Save user info
             with open("data/user_info.csv", "a", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow([name, age, gender])
