@@ -46,12 +46,12 @@ if st.session_state.current_page == 'User Info':
     st.markdown("Please fill in your details to get started")
 
     # Load and display animation (meditation/study style)
-    animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_u4yrau.json")
-
+    animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_1pxqjqps.json")
     if animation:
-        st_lottie(animation, height=220, key="meditation_study")
+        st_lottie(animation, height=220, key="character_animation")
     else:
         st.warning("⚠️ Animation failed to load. Please check your internet or animation URL.")
+
 
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
