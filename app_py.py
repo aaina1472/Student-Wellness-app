@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from textblob import TextBlob
 import os
-import csv  # Moved here
+import csv
+
 # Create folders if not exist
 os.makedirs("data", exist_ok=True)
 
@@ -71,33 +72,34 @@ elif st.session_state.current_page == 'Dashboard':
             st.write("Your entry has been recorded:")
             st.dataframe(df)
 
-        def analyze_mood(text):
-            return TextBlob(str(text)).sentiment.polarity
+            def analyze_mood(text):
+                return TextBlob(str(text)).sentiment.polarity
 
-        df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
-        avg_mood = df['Mood Score'].mean()
+            df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
+            avg_mood = df['Mood Score'].mean()
 
-        if avg_mood > 0.3:
-            risk = "Low"
-        elif avg_mood > 0.0:
-            risk = "Moderate"
+            if avg_mood > 0.3:
+                risk = "Low"
+            elif avg_mood > 0.0:
+                risk = "Moderate"
+            else:
+                risk = "High"
+
+            st.metric("Average Mood Score", f"{avg_mood:.2f}")
+            st.metric("Burnout Risk", risk)
+
+            st.session_state.avg_mood = avg_mood
+            st.session_state.risk = risk
+            st.session_state.mood_analyzed = True
+
+            # Save journal entry
+            with open("data/journal_entries.csv", "a", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([st.session_state.name, journal_entry, avg_mood])
         else:
-            risk = "High"
+            st.warning("Please enter something in your journal to analyze.")
 
-        st.metric("Average Mood Score", f"{avg_mood:.2f}")
-        st.metric("Burnout Risk", risk)
-
-        st.session_state.avg_mood = avg_mood
-        st.session_state.risk = risk
-        st.session_state.mood_analyzed = True
-
-        # Save journal entry
-        with open("data/journal_entries.csv", "a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([st.session_state.name, journal_entry, avg_mood])
-     else:
-         st.warning("Please enter something in your journal to analyze.")
-
+    if st.session_state.mood_analyzed:
         if st.button("Continue to Suggestions"):
             go_next()
 
@@ -128,6 +130,7 @@ elif st.session_state.current_page == 'Feedback':
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
+
 
 
 
