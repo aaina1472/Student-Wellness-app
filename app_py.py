@@ -6,6 +6,7 @@ import csv
 from streamlit_lottie import st_lottie
 import requests
 
+# Load Lottie animation from URL
 def load_lottie_url(url):
     r = requests.get(url)
     if r.status_code != 200:
@@ -45,19 +46,12 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load meditation and study animations
-    meditation_animation = load_lottie_url("https://assets1.lottiefiles.com/packages/lf20_0yfsb3a1.json")   # Peaceful walk
-    study_animation = load_lottie_url("https://assets6.lottiefiles.com/packages/lf20_dgjK9W.json")     # Yoga pose loop
+    # Load and display animations
+    meditation_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    study_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jcikwtux.json")
 
-
-    # Show animations side by side using columns
-    col1, col2 = st.columns(2)
-    with col1:
-        if meditation_animation:
-            st_lottie(meditation_animation, height=180, key="meditation")
-    with col2:
-        if study_animation:
-            st_lottie(study_animation, height=180, key="study")
+    st_lottie(meditation_animation, height=180, key="meditation")
+    st_lottie(study_animation, height=180, key="study")
 
     # Form Inputs
     name = st.text_input("Your Name")
@@ -78,3 +72,74 @@ if st.session_state.current_page == 'User Info':
             go_next()
         else:
             st.warning("Please enter your name to continue.")
+
+# ========== Page 2: Dashboard ==========
+elif st.session_state.current_page == 'Dashboard':
+    st.title("Mood Dashboard")
+
+    journal_entry = st.text_area("Write your journal entry here:")
+
+    if 'mood_analyzed' not in st.session_state:
+        st.session_state.mood_analyzed = False
+
+    if st.button("Analyze My Mood"):
+        if journal_entry.strip():
+            df = pd.DataFrame({'journal_entry': [journal_entry]})
+
+            def analyze_mood(text):
+                return TextBlob(str(text)).sentiment.polarity
+
+            df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
+            avg_mood = df['Mood Score'].mean()
+
+            if avg_mood > 0.3:
+                risk = "Low"
+            elif avg_mood > 0.0:
+                risk = "Moderate"
+            else:
+                risk = "High"
+
+            st.metric("Average Mood Score", f"{avg_mood:.2f}")
+            st.metric("Burnout Risk", risk)
+
+            st.session_state.avg_mood = avg_mood
+            st.session_state.risk = risk
+            st.session_state.mood_analyzed = True
+
+            with open("data/journal_entries.csv", "a", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([st.session_state.name, journal_entry, avg_mood])
+        else:
+            st.warning("Please enter something in your journal to analyze.")
+
+    if st.session_state.mood_analyzed:
+        if st.button("Continue to Suggestions"):
+            go_next()
+
+# ========== Page 3: Suggestions ==========
+elif st.session_state.current_page == 'Suggestions':
+    st.title("🧘 Wellness Suggestions")
+
+    risk = st.session_state.get('risk', 'Moderate')
+
+    if risk in ['Moderate', 'High']:
+        st.subheader("You might be feeling overwhelmed.")
+        st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
+        st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
+    else:
+        st.success("You're doing great! Keep it up 🥳")
+
+    if st.button("Continue to Feedback"):
+        go_next()
+
+# ========== Page 4: Feedback ==========
+elif st.session_state.current_page == 'Feedback':
+    st.title("💬 Feedback")
+    st.write("Thank you for using our Mood Prediction App!")
+
+    feedback = st.text_area("How was your experience?")
+    if st.button("Submit Feedback"):
+        with open("data/feedback.csv", "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
+        st.success("Thanks for your feedback! 🌟")
