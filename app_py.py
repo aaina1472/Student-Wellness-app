@@ -3,6 +3,15 @@ import pandas as pd
 from textblob import TextBlob
 import os
 import csv
+from streamlit_lottie import st_lottie
+import requests
+
+def load_lottieurl(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
 
 # Create folders if not exist
 os.makedirs("data", exist_ok=True)
@@ -36,6 +45,35 @@ def go_next():
 if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
+
+    # Load animations
+    welcome_animation = load_lottieurl("https://lottie.host/40d7edb2-4cb6-4a37-94b3-b4a50b529bde/C1vSXXr2Bp.json")
+    meditation_animation = load_lottieurl("https://lottie.host/39696cb2-bf45-4c43-a4ce-9cbd1f09f33a/KvhEz9UmlR.json")
+
+    # Show animations
+    st_lottie(welcome_animation, height=180, key="welcome")
+    st_lottie(meditation_animation, height=180, key="meditation_intro")
+
+    # Form Inputs
+    name = st.text_input("Your Name")
+    age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
+    gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
+
+    if st.button("Continue to Dashboard"):
+        if name:
+            st.session_state.name = name
+            st.session_state.age = age
+            st.session_state.gender = gender
+
+            # Save user info
+            with open("data/user_info.csv", "a", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow([name, age, gender])
+
+            go_next()
+        else:
+            st.warning("Please enter your name to continue.")
+            
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
@@ -55,14 +93,6 @@ if st.session_state.current_page == 'User Info':
             go_next()
         else:
             st.warning("Please enter your name to continue.")
-        st.subheader("Relax with a short meditation 🌿")
-    st.video("https://www.youtube.com/watch?v=ZToicYcHIOU")
-
-    st.subheader("Try light exercise 💪")
-    st.video("https://www.youtube.com/watch?v=5nZ2iBGvYO0")
-
-    st.subheader("Study with calm vibes 📖")
-    st.video("https://www.youtube.com/watch?v=hHW1oY26kxQ")
 
 # ========== Page 2: Dashboard ==========
 elif st.session_state.current_page == 'Dashboard':
