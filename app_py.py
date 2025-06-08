@@ -25,49 +25,18 @@ os.makedirs("data", exist_ok=True)
 
 st.set_page_config(page_title="Mood Predictor App", layout="centered")
 
-# ---------- Dark Mode Toggle & Theming ----------
-if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
+# ======== Only Dark Mode Applied =========
+bg_color = "#121212"
+text_color = "white"
+card_bg = "#1e1e1e"
+button_bg = "#BB86FC"
+button_text = "#121212"
 
-# Use option_menu for mode toggle in horizontal menu
-mode = option_menu(
-    menu_title=None,
-    options=["🌞 Light Mode", "🌙 Dark Mode"],
-    orientation="horizontal",
-    icons=["sun", "moon"],
-    default_index=1 if st.session_state.dark_mode else 0,
-    key="mode_option",
-)
-
-# Update session state dark mode based on selection
-st.session_state.dark_mode = (mode == "🌙 Dark Mode")
-
-# Set colors based on mode
-if st.session_state.dark_mode:
-    bg_color = "#121212"
-    text_color = "white"
-    card_bg = "#1e1e1e"
-    button_bg = "#BB86FC"
-    button_text = "#121212"
-else:
-    bg_color = "white"
-    text_color = "black"
-    card_bg = "#f0f2f6"
-    button_bg = "#4CAF50"
-    button_text = "white"
-
-# Inject CSS for theming
 st.markdown(
     f"""
     <style>
-    body {{
-        background-color: {bg_color};
-        color: {text_color};
-    }}
-    .stApp {{
-        background-color: {bg_color};
-        color: {text_color};
-    }}
+    body {{ background-color: {bg_color}; color: {text_color}; }}
+    .stApp {{ background-color: {bg_color}; color: {text_color}; }}
     div[data-testid="stMetric"] {{
         background-color: {card_bg}; 
         color: {text_color}; 
@@ -75,9 +44,7 @@ st.markdown(
         padding: 10px; 
         margin-bottom: 10px;
     }}
-    table {{
-        color: {text_color};
-    }}
+    table {{ color: {text_color}; }}
     button[kind="primary"] {{ 
         background-color: {button_bg} !important; 
         color: {button_text} !important; 
@@ -87,7 +54,11 @@ st.markdown(
         background-color: #3700B3 !important;
         color: white !important;
     }}
-    .stTextInput>div>div>input, .stNumberInput>div>div>input {{
+    .stTextInput>div>div>input {{
+        background-color: {card_bg};
+        color: {text_color};
+    }}
+    .stNumberInput>div>div>input {{
         background-color: {card_bg};
         color: {text_color};
     }}
