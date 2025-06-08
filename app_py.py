@@ -49,7 +49,7 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load and display animation (meditation/study style) - Updated URL
+    # Load and display animation (meditation/study style)
     animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_1pxqjqps.json")
     if animation:
         st_lottie(animation, height=220, key="character_animation")
@@ -132,10 +132,63 @@ elif st.session_state.current_page == 'Suggestions':
 
     risk = st.session_state.get('risk', 'Moderate')
 
-    if risk in ['Moderate', 'High']:
+    if risk == "Moderate":
         st.subheader("You might be feeling overwhelmed.")
         st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
         st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
+
+    elif risk == "High":
+        st.subheader("You might be feeling overwhelmed.")
+        st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
+        st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
+
+        # Daily Routine Schedule
+        st.markdown("### 🗓️ Recommended Daily Routine for You:")
+        routine = [
+            {"Time": "6:00 AM - 7:00 AM", "Activity": "Wake up & Morning exercise (stretch, yoga)"},
+            {"Time": "7:00 AM - 7:30 AM", "Activity": "Healthy breakfast (include green veggies, fruits)"},
+            {"Time": "7:30 AM - 9:00 AM", "Activity": "Focused study session"},
+            {"Time": "9:00 AM - 9:15 AM", "Activity": "Short break (walk/stretch)"},
+            {"Time": "9:15 AM - 11:00 AM", "Activity": "Study / Assignments"},
+            {"Time": "11:00 AM - 12:00 PM", "Activity": "Light snack & rest"},
+            {"Time": "12:00 PM - 1:00 PM", "Activity": "Lunch (balanced with veggies and protein)"},
+            {"Time": "1:00 PM - 2:00 PM", "Activity": "Power nap or relaxation"},
+            {"Time": "2:00 PM - 4:00 PM", "Activity": "Study or project work"},
+            {"Time": "4:00 PM - 4:30 PM", "Activity": "Physical activity (walk, cycling, sport)"},
+            {"Time": "4:30 PM - 5:00 PM", "Activity": "Healthy snack"},
+            {"Time": "5:00 PM - 7:00 PM", "Activity": "Study / Revision"},
+            {"Time": "7:00 PM - 8:00 PM", "Activity": "Dinner (include green vegetables)"},
+            {"Time": "8:00 PM - 9:00 PM", "Activity": "Leisure time (reading, hobbies)"},
+            {"Time": "9:00 PM - 10:00 PM", "Activity": "Prepare for next day & relax"},
+            {"Time": "10:00 PM", "Activity": "Sleep early for recovery"},
+        ]
+        routine_df = pd.DataFrame(routine)
+
+        st.table(routine_df)
+
+        # Chart using Altair
+        import altair as alt
+        from datetime import datetime
+
+        def parse_time(t):
+            return datetime.strptime(t.split(" - ")[0], "%I:%M %p")
+
+        routine_df['Start Time'] = routine_df['Time'].apply(lambda x: parse_time(x))
+        routine_df['End Time'] = routine_df['Time'].apply(lambda x: datetime.strptime(x.split(" - ")[1], "%I:%M %p") if " - " in x else parse_time(x))
+
+        chart = alt.Chart(routine_df).mark_bar().encode(
+            x=alt.X('Start Time:T', axis=alt.Axis(title='Time of Day', format='%I:%M %p')),
+            x2='End Time:T',
+            y=alt.Y('Activity:N', sort=None),
+            color=alt.Color('Activity:N', legend=None)
+        ).properties(
+            height=400,
+            width=700,
+            title='Daily Routine Timeline'
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
     else:
         st.success("You're doing great! Keep it up 🥳")
 
