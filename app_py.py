@@ -5,10 +5,11 @@ import os
 import csv
 from streamlit_lottie import st_lottie
 import requests
+from streamlit_option_menu import option_menu
 import altair as alt
 from datetime import datetime
 
-# ========== Utility Functions ==========
+# ========== Function to Load Animation with cache ==========
 @st.cache_data(ttl=3600)
 def load_lottie_url(url):
     try:
@@ -19,64 +20,84 @@ def load_lottie_url(url):
     except Exception:
         return None
 
-def parse_time(t):
-    return datetime.strptime(t.split(" - ")[0], "%I:%M %p")
-
-def get_routine_df():
-    routine = [
-        {"Time": "6:00 AM - 7:00 AM", "Activity": "Wake up & Morning exercise (stretch, yoga)"},
-        {"Time": "7:00 AM - 7:30 AM", "Activity": "Healthy breakfast (include green veggies, fruits)"},
-        {"Time": "7:30 AM - 9:00 AM", "Activity": "Focused study session"},
-        {"Time": "9:00 AM - 9:15 AM", "Activity": "Short break (walk/stretch)"},
-        {"Time": "9:15 AM - 11:00 AM", "Activity": "Study / Assignments"},
-        {"Time": "11:00 AM - 12:00 PM", "Activity": "Light snack & rest"},
-        {"Time": "12:00 PM - 1:00 PM", "Activity": "Lunch (balanced with veggies and protein)"},
-        {"Time": "1:00 PM - 2:00 PM", "Activity": "Power nap or relaxation"},
-        {"Time": "2:00 PM - 4:00 PM", "Activity": "Study or project work"},
-        {"Time": "4:00 PM - 4:30 PM", "Activity": "Physical activity (walk, cycling, sport)"},
-        {"Time": "4:30 PM - 5:00 PM", "Activity": "Healthy snack"},
-        {"Time": "5:00 PM - 7:00 PM", "Activity": "Study / Revision"},
-        {"Time": "7:00 PM - 8:00 PM", "Activity": "Dinner (include green vegetables)"},
-        {"Time": "8:00 PM - 9:00 PM", "Activity": "Leisure time (reading, hobbies)"},
-        {"Time": "9:00 PM - 10:00 PM", "Activity": "Prepare for next day & relax"},
-        {"Time": "10:00 PM", "Activity": "Sleep early for recovery"},
-    ]
-    df = pd.DataFrame(routine)
-    df['Start Time'] = df['Time'].apply(lambda x: parse_time(x))
-    df['End Time'] = df['Time'].apply(lambda x: datetime.strptime(x.split(" - ")[1], "%I:%M %p") if " - " in x else parse_time(x))
-    return df
-
-def display_routine_chart(df):
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X('Start Time:T', axis=alt.Axis(title='Time of Day', format='%I:%M %p')),
-        x2='End Time:T',
-        y=alt.Y('Activity:N', sort=None),
-        color=alt.Color('Activity:N', legend=None)
-    ).properties(
-        height=400,
-        width=700,
-        title='Daily Routine Timeline'
-    )
-    st.altair_chart(chart, use_container_width=True)
-
-def motivational_quote():
-    quotes = [
-        "🌟 *Believe you can and you're halfway there.*",
-        "🌱 *Small steps every day lead to big change.*",
-        "💪 *Your only limit is your mind.*",
-        "🌞 *A fresh mind is a focused mind.*"
-    ]
-    st.markdown(f"**Motivational Quote of the Day:** {quotes[hash(st.session_state.get('name', '')) % len(quotes)]}")
-
-# ========== App Initialization ==========
-st.set_page_config(page_title="Mood Predictor App", layout="centered")
+# Create folders if not exist
 os.makedirs("data", exist_ok=True)
 
-# Session State
+st.set_page_config(page_title="Mood Predictor App", layout="centered")
+
+# ---------- Dark Mode Toggle & Theming ----------
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = False
+
+mode = option_menu(
+    menu_title=None,
+    options=["🌞 Light Mode", "🌙 Dark Mode"],
+    orientation="horizontal",
+    icons=["sun", "moon"],
+    default_index=1 if st.session_state.dark_mode else 0,
+    key="mode_option",
+)
+
+st.session_state.dark_mode = (mode == "🌙 Dark Mode")
+
+# Apply CSS for dark mode & custom colors
+if st.session_state.dark_mode:
+    bg_color = "#121212"
+    text_color = "white"
+    card_bg = "#1e1e1e"
+    button_bg = "#BB86FC"
+    button_text = "#121212"
+else:
+    bg_color = "white"
+    text_color = "black"
+    card_bg = "#f0f2f6"
+    button_bg = "#4CAF50"
+    button_text = "white"
+
+st.markdown(
+    f"""
+    <style>
+    body {{ background-color: {bg_color}; color: {text_color}; }}
+    .stApp {{ background-color: {bg_color}; color: {text_color}; }}
+    div[data-testid="stMetric"] {{
+        background-color: {card_bg}; 
+        color: {text_color}; 
+        border-radius: 8px; 
+        padding: 10px; 
+        margin-bottom: 10px;
+    }}
+    table {{ color: {text_color}; }}
+    button[kind="primary"] {{ 
+        background-color: {button_bg} !important; 
+        color: {button_text} !important; 
+        border: none !important; 
+    }}
+    button[kind="primary"]:hover {{
+        background-color: #3700B3 !important;
+        color: white !important;
+    }}
+    .stTextInput>div>div>input {{
+        background-color: {card_bg};
+        color: {text_color};
+    }}
+    .stNumberInput>div>div>input {{
+        background-color: {card_bg};
+        color: {text_color};
+    }}
+    select {{
+        background-color: {card_bg};
+        color: {text_color};
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Initialize session state
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'User Info'
 
-# ========== Navigation ==========
+# Sidebar Navigation (locked step-by-step)
 st.sidebar.title("Navigation")
 pages = ["User Info", "Dashboard", "Suggestions", "Feedback"]
 current_idx = pages.index(st.session_state.current_page)
@@ -88,6 +109,7 @@ for i, page in enumerate(pages):
     else:
         st.sidebar.markdown(f"{i+1}. {page} 🔒")
 
+# Page Navigator
 def go_next():
     next_idx = pages.index(st.session_state.current_page) + 1
     if next_idx < len(pages):
@@ -98,9 +120,12 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
+    # Load and display animation (meditation/study style)
     animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_1pxqjqps.json")
     if animation:
         st_lottie(animation, height=220, key="character_animation")
+    else:
+        st.warning("⚠️ Animation failed to load. Please check your internet or animation URL.")
 
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
@@ -111,8 +136,12 @@ if st.session_state.current_page == 'User Info':
             st.session_state.name = name
             st.session_state.age = age
             st.session_state.gender = gender
+
+            # Save user info
             with open("data/user_info.csv", "a", newline="") as f:
-                csv.writer(f).writerow([name, age, gender])
+                writer = csv.writer(f)
+                writer.writerow([name, age, gender])
+
             go_next()
         else:
             st.warning("Please enter your name to continue.")
@@ -127,52 +156,163 @@ elif st.session_state.current_page == 'Dashboard':
 
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
-            score = TextBlob(journal_entry).sentiment.polarity
-            risk = "Low" if score > 0.3 else "Moderate" if score > 0.0 else "High"
-            st.metric("Mood Score", f"{score:.2f}")
+            df = pd.DataFrame({'journal_entry': [journal_entry]})
+
+            def analyze_mood(text):
+                return TextBlob(str(text)).sentiment.polarity
+
+            df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
+            avg_mood = df['Mood Score'].mean()
+
+            if avg_mood > 0.3:
+                risk = "Low"
+            elif avg_mood > 0.0:
+                risk = "Moderate"
+            else:
+                risk = "High"
+
+            st.metric("Average Mood Score", f"{avg_mood:.2f}")
             st.metric("Burnout Risk", risk)
 
-            st.session_state.avg_mood = score
+            st.session_state.avg_mood = avg_mood
             st.session_state.risk = risk
             st.session_state.mood_analyzed = True
 
+            # Show flower animation only if risk is Low
             if risk == "Low":
-                flower = load_lottie_url("https://assets4.lottiefiles.com/packages/lf20_touohxv0.json")
-                if flower: st_lottie(flower, height=150)
+                flower_animation = load_lottie_url("https://assets4.lottiefiles.com/packages/lf20_touohxv0.json")
+                if flower_animation:
+                    st_lottie(flower_animation, height=150, key="flower_animation")
+                else:
+                    st.warning("⚠️ Flower animation failed to load.")
 
+            # Save journal entry
             with open("data/journal_entries.csv", "a", newline="") as f:
-                csv.writer(f).writerow([st.session_state.name, journal_entry, score])
+                writer = csv.writer(f)
+                writer.writerow([st.session_state.name, journal_entry, avg_mood])
         else:
-            st.warning("Please write something first!")
+            st.warning("Please enter something in your journal to analyze.")
 
     if st.session_state.mood_analyzed:
         if st.button("Continue to Suggestions"):
             go_next()
-
-        # Download Option
-        st.download_button("📥 Download My Journal Data",
-                           data=open("data/journal_entries.csv", "rb"),
-                           file_name="journal_entries.csv")
 
 # ========== Page 3: Suggestions ==========
 elif st.session_state.current_page == 'Suggestions':
     st.title("🧘 Wellness Suggestions")
 
     risk = st.session_state.get('risk', 'Moderate')
-    st.subheader("You might be feeling overwhelmed." if risk in ["High", "Moderate"] else "You're doing great! Keep it up 🥳")
 
-    st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
-    st.markdown("[🩺 Burnout Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
+    # Motivational popup - only once per session
+    if "motivational_shown" not in st.session_state:
+        st.session_state.motivational_shown = True
+        st.info(
+            "💡 Motivation: \"The only way to do great work is to love what you do.\" – Steve Jobs"
+        )
 
-    if risk in ["High", "Moderate"]:
-        st.markdown("### 🗓️ Recommended Daily Routine:")
-        routine_df = get_routine_df()
+    if risk == "Moderate":
+        st.subheader("You might be feeling overwhelmed.")
+        st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
+        st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
+
+        # Optional: Add moderate daily routine (similar structure to high)
+        st.markdown("### 🗓️ Suggested Routine for Moderate Risk:")
+        routine = [
+            {"Time": "6:30 AM - 7:30 AM", "Activity": "Light exercise (walking, stretching)"},
+            {"Time": "7:30 AM - 8:00 AM", "Activity": "Healthy breakfast with fruits and veggies"},
+            {"Time": "8:00 AM - 10:00 AM", "Activity": "Focused study/work"},
+            {"Time": "10:00 AM - 10:15 AM", "Activity": "Break - meditate or relax"},
+            {"Time": "10:15 AM - 12:00 PM", "Activity": "Study or project work"},
+            {"Time": "12:00 PM - 1:00 PM", "Activity": "Balanced lunch"},
+            {"Time": "1:00 PM - 2:00 PM", "Activity": "Rest or light nap"},
+            {"Time": "2:00 PM - 4:00 PM", "Activity": "Study or assignments"},
+            {"Time": "4:00 PM - 4:30 PM", "Activity": "Physical activity (walk, cycling)"},
+            {"Time": "4:30 PM - 5:00 PM", "Activity": "Healthy snack"},
+            {"Time": "5:00 PM - 7:00 PM", "Activity": "Light study/revision"},
+            {"Time": "7:00 PM - 8:00 PM", "Activity": "Dinner with veggies"},
+            {"Time": "8:00 PM - 9:00 PM", "Activity": "Relaxation and hobbies"},
+            {"Time": "9:00 PM - 10:00 PM", "Activity": "Prepare for next day & sleep early"},
+        ]
+        routine_df = pd.DataFrame(routine)
+
         st.table(routine_df)
-        display_routine_chart(routine_df)
 
-        # Add motivational content
-        motivational_quote()
-        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3")
+        # Chart using Altair
+        def parse_time(t):
+            return datetime.strptime(t.split(" - ")[0], "%I:%M %p")
+
+        routine_df['Start Time'] = routine_df['Time'].apply(lambda x: parse_time(x))
+        routine_df['End Time'] = routine_df['Time'].apply(lambda x: datetime.strptime(x.split(" - ")[1], "%I:%M %p") if " - " in x else parse_time(x))
+
+        chart = alt.Chart(routine_df).mark_bar().encode(
+            x=alt.X('Start Time:T', axis=alt.Axis(title='Time of Day', format='%I:%M %p')),
+            x2='End Time:T',
+            y=alt.Y('Activity:N', sort=None),
+            color=alt.Color('Activity:N', legend=None)
+        ).properties(
+            height=400,
+            width=700,
+            title='Daily Routine Timeline for Moderate Risk'
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
+    elif risk == "High":
+        st.subheader("You might be feeling overwhelmed.")
+        st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
+        st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
+
+        # Daily Routine Schedule
+        st.markdown("### 🗓️ Recommended Daily Routine for You:")
+        routine = [
+            {"Time": "6:00 AM - 7:00 AM", "Activity": "Wake up & Morning exercise (stretch, yoga)"},
+            {"Time": "7:00 AM - 7:30 AM", "Activity": "Healthy breakfast (include green veggies, fruits)"},
+            {"Time": "7:30 AM - 9:00 AM", "Activity": "Focused study session"},
+            {"Time": "9:00 AM - 9:15 AM", "Activity": "Short break (walk/stretch)"},
+            {"Time": "9:15 AM - 11:00 AM", "Activity": "Study / Assignments"},
+            {"Time": "11:00 AM - 12:00 PM", "Activity": "Light snack & rest"},
+            {"Time": "12:00 PM - 1:00 PM", "Activity": "Lunch (balanced with veggies and protein)"},
+            {"Time": "1:00 PM - 2:00 PM", "Activity": "Power nap or relaxation"},
+            {"Time": "2:00 PM - 4:00 PM", "Activity": "Study or project work"},
+            {"Time": "4:00 PM - 4:30 PM", "Activity": "Physical activity (walk, cycling, sport)"},
+            {"Time": "4:30 PM - 5:00 PM", "Activity": "Healthy snack"},
+            {"Time": "5:00 PM - 7:00 PM", "Activity": "Study / Revision"},
+            {"Time": "7:00 PM - 8:00 PM", "Activity": "Dinner (include green vegetables)"},
+            {"Time": "8:00 PM - 9:00 PM", "Activity": "Leisure time (reading, hobbies)"},
+            {"Time": "9:00 PM - 10:00 PM", "Activity": "Prepare for next day & relax"},
+            {"Time": "10:00 PM", "Activity": "Sleep early for recovery"},
+        ]
+        routine_df = pd.DataFrame(routine)
+
+        st.table(routine_df)
+
+        # Chart using Altair
+        def parse_time(t):
+            return datetime.strptime(t.split(" - ")[0], "%I:%M %p")
+
+        routine_df['Start Time'] = routine_df['Time'].apply(lambda x: parse_time(x))
+        routine_df['End Time'] = routine_df['Time'].apply(lambda x: datetime.strptime(x.split(" - ")[1], "%I:%M %p") if " - " in x else parse_time(x))
+
+        chart = alt.Chart(routine_df).mark_bar().encode(
+            x=alt.X('Start Time:T', axis=alt.Axis(title='Time of Day', format='%I:%M %p')),
+            x2='End Time:T',
+            y=alt.Y('Activity:N', sort=None),
+            color=alt.Color('Activity:N', legend=None)
+        ).properties(
+            height=400,
+            width=700,
+            title='Daily Routine Timeline for High Risk'
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
+    else:
+        st.success("You're doing great! Keep it up 🥳")
+
+    # TED Talk Embed
+    st.markdown("### 🎙️ Talk of the Day")
+    st.video("https://www.youtube.com/watch?v=iCvmsMzlF7o")  # TEDx - The Power of Vulnerability
+    st.caption("“Vulnerability is the birthplace of innovation, creativity and change.” – Brené Brown")
 
     if st.button("Continue to Feedback"):
         go_next()
@@ -185,5 +325,6 @@ elif st.session_state.current_page == 'Feedback':
     feedback = st.text_area("How was your experience?")
     if st.button("Submit Feedback"):
         with open("data/feedback.csv", "a", newline="") as f:
-            csv.writer(f).writerow([st.session_state.get("name", "Anonymous"), feedback])
+            writer = csv.writer(f)
+            writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
