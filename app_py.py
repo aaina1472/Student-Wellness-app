@@ -46,8 +46,8 @@ if st.session_state.current_page == 'User Info':
     st.markdown("Please fill in your details to get started")
 
     # Load meditation and study animations
-    #study_animation = load_lottie_url("https://assets6.lottiefiles.com/packages/lf20_dgjK9W.json")     # Yoga pose loop
     meditation_animation = load_lottie_url("https://assets1.lottiefiles.com/packages/lf20_0yfsb3a1.json")   # Peaceful walk
+    study_animation = load_lottie_url("https://assets6.lottiefiles.com/packages/lf20_dgjK9W.json")     # Yoga pose loop
 
 
     # Show animations side by side using columns
