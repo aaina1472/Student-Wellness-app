@@ -45,16 +45,20 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Use a stable Lottie animation URL (tested)
-    welcome_animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_0yfsb3a1.json")
+    # Load meditation and study animations
+    meditation_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    study_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jcikwtux.json")
 
-    # Debug: Show if animation loaded properly
-    st.write("Animation loaded:", welcome_animation is not None)
-
-    if welcome_animation:
-        st_lottie(welcome_animation, height=180, key="welcome")
+    # Show animations (if loaded)
+    if meditation_animation:
+        st_lottie(meditation_animation, height=180, key="meditation")
     else:
-        st.error("Failed to load welcome animation.")
+        st.error("Failed to load meditation animation.")
+
+    if study_animation:
+        st_lottie(study_animation, height=180, key="study")
+    else:
+        st.error("Failed to load study animation.")
 
     # Form Inputs
     name = st.text_input("Your Name")
