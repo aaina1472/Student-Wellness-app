@@ -55,10 +55,7 @@ if st.session_state.current_page == 'User Info':
             go_next()
         else:
             st.warning("Please enter your name to continue.")
-
-# ========== Page 2: Dashboard ==========
-elif st.session_state.current_page == 'Dashboard':
-    st.subheader("Relax with a short meditation 🌿")
+        st.subheader("Relax with a short meditation 🌿")
     st.video("https://www.youtube.com/watch?v=ZToicYcHIOU")
 
     st.subheader("Try light exercise 💪")
@@ -67,6 +64,8 @@ elif st.session_state.current_page == 'Dashboard':
     st.subheader("Study with calm vibes 📖")
     st.video("https://www.youtube.com/watch?v=hHW1oY26kxQ")
 
+# ========== Page 2: Dashboard ==========
+elif st.session_state.current_page == 'Dashboard':
     st.title("Mood Dashboard")
 
     journal_entry = st.text_area("Write your journal entry here:")
