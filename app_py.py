@@ -296,12 +296,42 @@ elif st.session_state.page == "✨ Suggestions":
     else:
         st.success("You're doing great! Keep it up 🥳")
 
+    # === Talk of the Day with dynamic video ===
     st.markdown("### 🎙️ Talk of the Day")
-    st.video("https://www.youtube.com/watch?v=iCvmsMzlF7o")  # TEDx - The Power of Vulnerability
-    st.caption("“Vulnerability is the birthplace of innovation, creativity and change.” – Brené Brown")
+
+    # Predefined video options
+    video_options = {
+        "TEDx - The Power of Vulnerability": "https://www.youtube.com/watch?v=iCvmsMzlF7o",
+        "Motivational Speech - Never Give Up": "https://www.youtube.com/watch?v=mgmVOuLgFB0",
+        "Mindfulness Meditation": "https://www.youtube.com/watch?v=inpok4MKVLM",
+        "Calming Nature Sounds": "https://www.youtube.com/watch?v=OdIJ2x3nxzQ",
+    }
+
+    selected_title = st.selectbox("Select a video:", options=list(video_options.keys()))
+
+    custom_url = st.text_input("Or enter a YouTube video URL:")
+
+    video_url = custom_url.strip() if custom_url.strip() else video_options[selected_title]
+
+    try:
+        st.video(video_url)
+    except:
+        st.warning("Failed to load video. Please check the URL.")
+
+    captions = {
+        "TEDx - The Power of Vulnerability": "“Vulnerability is the birthplace of innovation, creativity and change.” – Brené Brown",
+        "Motivational Speech - Never Give Up": "“Don’t watch the clock; do what it does. Keep going.” – Sam Levenson",
+        "Mindfulness Meditation": "Relax your mind and body with this meditation.",
+        "Calming Nature Sounds": "Experience calm and tranquility with nature’s sounds.",
+    }
+
+    caption_text = captions.get(selected_title, "")
+    if caption_text:
+        st.caption(caption_text)
 
     if st.button("Continue to Feedback"):
         go_next()
+
 
 # ========== Page 4: Feedback ==========
 elif st.session_state.page == "📝 Feedback":
