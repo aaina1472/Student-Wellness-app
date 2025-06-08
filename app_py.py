@@ -6,12 +6,12 @@ import csv
 from streamlit_lottie import st_lottie
 import requests
 
+# Function to load Lottie animations
 def load_lottieurl(url):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
-
 
 # Create folders if not exist
 os.makedirs("data", exist_ok=True)
@@ -51,33 +51,15 @@ if st.session_state.current_page == 'User Info':
     meditation_animation = load_lottieurl("https://lottie.host/39696cb2-bf45-4c43-a4ce-9cbd1f09f33a/KvhEz9UmlR.json")
 
     # Show animations
-    st_lottie(welcome_animation, height=180, key="welcome")
-    st_lottie(meditation_animation, height=180, key="meditation_intro")
+    if welcome_animation:
+        st_lottie(welcome_animation, height=180, key="welcome")
+    if meditation_animation:
+        st_lottie(meditation_animation, height=180, key="meditation_intro")
 
     # Form Inputs
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
-
-    if st.button("Continue to Dashboard"):
-        if name:
-            st.session_state.name = name
-            st.session_state.age = age
-            st.session_state.gender = gender
-
-            # Save user info
-            with open("data/user_info.csv", "a", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([name, age, gender])
-
-            go_next()
-        else:
-            st.warning("Please enter your name to continue.")
-            
-    name = st.text_input("Your Name")
-    age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
-    gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
-    #st.write("You selected:", gender)
 
     if st.button("Continue to Dashboard"):
         if name:
@@ -106,9 +88,6 @@ elif st.session_state.current_page == 'Dashboard':
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
             df = pd.DataFrame({'journal_entry': [journal_entry]})
-
-            st.write("Your entry has been recorded:")
-            #st.dataframe(df)
 
             def analyze_mood(text):
                 return TextBlob(str(text)).sentiment.polarity
@@ -157,8 +136,6 @@ elif st.session_state.current_page == 'Suggestions':
     if st.button("Continue to Feedback"):
         go_next()
 
-
-
 # ========== Page 4: Feedback ==========
 elif st.session_state.current_page == 'Feedback':
     st.title("💬 Feedback")
@@ -170,20 +147,3 @@ elif st.session_state.current_page == 'Feedback':
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
