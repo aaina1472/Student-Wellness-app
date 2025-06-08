@@ -72,12 +72,12 @@ if st.session_state.current_page == 'User Info':
         else:
             st.warning("Please enter your name to continue.")
 
-# ========== Page 2: Dashboard ==========#
+# ========== Page 2: Dashboard ========== #
 elif st.session_state.current_page == 'Dashboard':
     st.title("Mood Dashboard")
     
     # Load and show flower animation
-    flower_animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_jw2d0ck9.json")
+    flower_animation = load_lottie_url("https://assets7.lottiefiles.com/packages/lf20_4kx2q32n.json")
     if flower_animation:
         st_lottie(flower_animation, height=150, key="flower_dashboard")
     else:
@@ -121,6 +121,7 @@ elif st.session_state.current_page == 'Dashboard':
     if st.session_state.mood_analyzed:
         if st.button("Continue to Suggestions"):
             go_next()
+
 
 
 # ========== Page 3: Suggestions ==========
