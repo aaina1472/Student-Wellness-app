@@ -4,3 +4,4 @@ textblob
 matplotlib
 streamlit-lottie
 requests
+streamlit-option-menu
