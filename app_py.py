@@ -6,24 +6,23 @@ import csv
 from streamlit_lottie import st_lottie
 import requests
 
-# Function to load Lottie animation from URL
+# ========== Function to Load Animation ==========
 def load_lottie_url(url):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
 
-# Create data folder
+# Create folders if not exist
 os.makedirs("data", exist_ok=True)
 
-# Set Streamlit page config
 st.set_page_config(page_title="Mood Predictor App", layout="centered")
 
-# Initialize session state for navigation
+# Initialize session state
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'User Info'
 
-# Sidebar Navigation
+# Sidebar Navigation (locked step-by-step)
 st.sidebar.title("Navigation")
 pages = ["User Info", "Dashboard", "Suggestions", "Feedback"]
 current_idx = pages.index(st.session_state.current_page)
@@ -35,7 +34,7 @@ for i, page in enumerate(pages):
     else:
         st.sidebar.markdown(f"{i+1}. {page} 🔒")
 
-# Go to next page
+# Page Navigator
 def go_next():
     next_idx = pages.index(st.session_state.current_page) + 1
     if next_idx < len(pages):
@@ -46,12 +45,13 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load and show animation
-    meditation_study_animation = load_lottie_url("https://lottie.host/ef2de21b-9f58-4717-9c9b-b9b383ffdb4a/9rp0ZqRdeq.json")
-    if meditation_study_animation:
-        st_lottie(meditation_study_animation, height=200, key="focus_anim")
+    # Load and display animation (meditation/study style)
+    animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    if animation:
+        st_lottie(animation, height=220, key="meditation_study")
+    else:
+        st.warning("⚠️ Animation failed to load. Please check your internet or animation URL.")
 
-    # Form inputs
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
@@ -74,7 +74,6 @@ if st.session_state.current_page == 'User Info':
 # ========== Page 2: Dashboard ==========
 elif st.session_state.current_page == 'Dashboard':
     st.title("Mood Dashboard")
-
     journal_entry = st.text_area("Write your journal entry here:")
 
     if 'mood_analyzed' not in st.session_state:
@@ -83,14 +82,18 @@ elif st.session_state.current_page == 'Dashboard':
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
             df = pd.DataFrame({'journal_entry': [journal_entry]})
-
             def analyze_mood(text):
                 return TextBlob(str(text)).sentiment.polarity
 
             df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
             avg_mood = df['Mood Score'].mean()
 
-            risk = "Low" if avg_mood > 0.3 else "Moderate" if avg_mood > 0.0 else "High"
+            if avg_mood > 0.3:
+                risk = "Low"
+            elif avg_mood > 0.0:
+                risk = "Moderate"
+            else:
+                risk = "High"
 
             st.metric("Average Mood Score", f"{avg_mood:.2f}")
             st.metric("Burnout Risk", risk)
@@ -99,6 +102,7 @@ elif st.session_state.current_page == 'Dashboard':
             st.session_state.risk = risk
             st.session_state.mood_analyzed = True
 
+            # Save journal entry
             with open("data/journal_entries.csv", "a", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow([st.session_state.name, journal_entry, avg_mood])
