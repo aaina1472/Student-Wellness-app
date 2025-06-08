@@ -58,6 +58,15 @@ if st.session_state.current_page == 'User Info':
 
 # ========== Page 2: Dashboard ==========
 elif st.session_state.current_page == 'Dashboard':
+    st.subheader("Relax with a short meditation 🌿")
+    st.video("https://www.youtube.com/watch?v=ZToicYcHIOU")
+
+    st.subheader("Try light exercise 💪")
+    st.video("https://www.youtube.com/watch?v=5nZ2iBGvYO0")
+
+    st.subheader("Study with calm vibes 📖")
+    st.video("https://www.youtube.com/watch?v=hHW1oY26kxQ")
+
     st.title("Mood Dashboard")
 
     journal_entry = st.text_area("Write your journal entry here:")
@@ -118,6 +127,8 @@ elif st.session_state.current_page == 'Suggestions':
 
     if st.button("Continue to Feedback"):
         go_next()
+
+
 
 # ========== Page 4: Feedback ==========
 elif st.session_state.current_page == 'Feedback':
