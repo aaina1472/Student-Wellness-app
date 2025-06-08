@@ -6,12 +6,16 @@ import csv
 from streamlit_lottie import st_lottie
 import requests
 
-# ========== Function to Load Animation ==========
+# ========== Function to Load Animation with cache ==========
+@st.cache_data(ttl=3600)
 def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except Exception:
         return None
-    return r.json()
 
 # Create folders if not exist
 os.makedirs("data", exist_ok=True)
