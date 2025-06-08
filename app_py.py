@@ -39,7 +39,7 @@ if st.session_state.current_page == 'User Info':
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
-    st.write("You selected:", gender)
+    #st.write("You selected:", gender)
 
     if st.button("Continue to Dashboard"):
         if name:
@@ -70,7 +70,7 @@ elif st.session_state.current_page == 'Dashboard':
             df = pd.DataFrame({'journal_entry': [journal_entry]})
 
             st.write("Your entry has been recorded:")
-            st.dataframe(df)
+            #st.dataframe(df)
 
             def analyze_mood(text):
                 return TextBlob(str(text)).sentiment.polarity
