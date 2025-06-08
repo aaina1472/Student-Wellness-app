@@ -46,12 +46,11 @@ if st.session_state.current_page == 'User Info':
     st.markdown("Please fill in your details to get started")
 
     # Load and display animation (meditation/study style)
-    animation = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_1pxqjqps.json")
+    animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_v7gdhjfx.json")
     if animation:
-        st_lottie(animation, height=220, key="character_animation")
+        st_lottie(animation, height=220, key="meditation_study")
     else:
         st.warning("⚠️ Animation failed to load. Please check your internet or animation URL.")
-
 
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
@@ -72,17 +71,9 @@ if st.session_state.current_page == 'User Info':
         else:
             st.warning("Please enter your name to continue.")
 
-# ========== Page 2: Dashboard ==========#
+# ========== Page 2: Dashboard ==========
 elif st.session_state.current_page == 'Dashboard':
     st.title("Mood Dashboard")
-    
-    # Load and show flower animation
-    flower_animation = load_lottie_url("https://assets4.lottiefiles.com/packages/lf20_touohxv0.json")
-    if flower_animation:
-        st_lottie(flower_animation, height=150, key="flower_dashboard")
-    else:
-        st.warning("⚠️ Flower animation failed to load.")
-    
     journal_entry = st.text_area("Write your journal entry here:")
 
     if 'mood_analyzed' not in st.session_state:
@@ -91,6 +82,7 @@ elif st.session_state.current_page == 'Dashboard':
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
             df = pd.DataFrame({'journal_entry': [journal_entry]})
+
             def analyze_mood(text):
                 return TextBlob(str(text)).sentiment.polarity
 
@@ -111,6 +103,14 @@ elif st.session_state.current_page == 'Dashboard':
             st.session_state.risk = risk
             st.session_state.mood_analyzed = True
 
+            # Show flower animation only if risk is Low
+            if risk == "Low":
+                flower_animation = load_lottie_url("https://assets4.lottiefiles.com/packages/lf20_touohxv0.json")
+                if flower_animation:
+                    st_lottie(flower_animation, height=150, key="flower_animation")
+                else:
+                    st.warning("⚠️ Flower animation failed to load.")
+
             # Save journal entry
             with open("data/journal_entries.csv", "a", newline="") as f:
                 writer = csv.writer(f)
@@ -121,9 +121,6 @@ elif st.session_state.current_page == 'Dashboard':
     if st.session_state.mood_analyzed:
         if st.button("Continue to Suggestions"):
             go_next()
-
-
-
 
 # ========== Page 3: Suggestions ==========
 elif st.session_state.current_page == 'Suggestions':
