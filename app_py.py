@@ -34,7 +34,6 @@ for i, page in enumerate(pages):
     else:
         st.sidebar.markdown(f"{i+1}. {page} 🔒")
 
-# Page Navigator
 def go_next():
     next_idx = pages.index(st.session_state.current_page) + 1
     if next_idx < len(pages):
@@ -45,22 +44,22 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load meditation animation JSON
-    meditation_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    # Load meditation animation with plants & greenery
+    meditation_animation = load_lottie_url("https://assets7.lottiefiles.com/packages/lf20_jg5qzqct.json")
 
-    # Green bordered container with padding and rounded corners
+    # Display animation with green border and light green background
     st.markdown("""
         <div style="
-            border: 4px solid #2ecc71;
+            border: 4px solid #27ae60;
             border-radius: 20px;
             padding: 15px;
-            max-width: 350px;
+            max-width: 400px;
             margin-bottom: 20px;
-            background-color: #e6f4ea;">
+            background-color: #eafaf1;">
     """, unsafe_allow_html=True)
 
     if meditation_animation:
-        st_lottie(meditation_animation, height=250, key="meditation_green")
+        st_lottie(meditation_animation, height=280, key="meditation_green_plants")
     else:
         st.error("Failed to load meditation animation.")
 
@@ -77,7 +76,6 @@ if st.session_state.current_page == 'User Info':
             st.session_state.age = age
             st.session_state.gender = gender
 
-            # Save user info
             with open("data/user_info.csv", "a", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow([name, age, gender])
