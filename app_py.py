@@ -6,8 +6,8 @@ import csv
 from streamlit_lottie import st_lottie
 import requests
 
-# Function to load Lottie animations
-def load_lottieurl(url):
+# Function to load Lottie animation from a URL
+def load_lottie_url(url):
     r = requests.get(url)
     if r.status_code != 200:
         return None
@@ -46,17 +46,17 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load animations
-    welcome_animation = load_lottieurl("https://lottie.host/40d7edb2-4cb6-4a37-94b3-b4a50b529bde/C1vSXXr2Bp.json")
-    meditation_animation = load_lottieurl("https://lottie.host/39696cb2-bf45-4c43-a4ce-9cbd1f09f33a/KvhEz9UmlR.json")
+    # Load animations once
+    welcome_animation = load_lottie_url("https://lottie.host/40d7edb2-4cb6-4a37-94b3-b4a50b529bde/C1vSXXr2Bp.json")
+    meditation_animation = load_lottie_url("https://lottie.host/39696cb2-bf45-4c43-a4ce-9cbd1f09f33a/KvhEz9UmlR.json")
 
-    # Show animations
+    # Show Lottie animations
     if welcome_animation:
         st_lottie(welcome_animation, height=180, key="welcome")
     if meditation_animation:
         st_lottie(meditation_animation, height=180, key="meditation_intro")
 
-    # Form Inputs
+    # User input form
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
@@ -88,6 +88,8 @@ elif st.session_state.current_page == 'Dashboard':
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
             df = pd.DataFrame({'journal_entry': [journal_entry]})
+
+            st.write("Your entry has been recorded:")
 
             def analyze_mood(text):
                 return TextBlob(str(text)).sentiment.polarity
