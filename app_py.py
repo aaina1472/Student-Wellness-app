@@ -61,11 +61,15 @@ elif st.session_state.current_page == 'Dashboard':
 
     journal_entry = st.text_area("✍️ Write your journal entry here:")
 
-    if journal_entry:
-        df = pd.DataFrame({'journal_entry': [journal_entry]})
+    if 'mood_analyzed' not in st.session_state:
+        st.session_state.mood_analyzed = False
 
-        st.write("Your entry has been recorded:")
-        st.dataframe(df)
+    if st.button("Analyze My Mood"):
+        if journal_entry.strip():
+            df = pd.DataFrame({'journal_entry': [journal_entry]})
+
+            st.write("Your entry has been recorded:")
+            st.dataframe(df)
 
         def analyze_mood(text):
             return TextBlob(str(text)).sentiment.polarity
@@ -85,11 +89,14 @@ elif st.session_state.current_page == 'Dashboard':
 
         st.session_state.avg_mood = avg_mood
         st.session_state.risk = risk
+        st.session_state.mood_analyzed = True
 
         # Save journal entry
         with open("data/journal_entries.csv", "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([st.session_state.name, journal_entry, avg_mood])
+     else:
+         st.warning("Please enter something in your journal to analyze.")
 
         if st.button("Continue to Suggestions"):
             go_next()
