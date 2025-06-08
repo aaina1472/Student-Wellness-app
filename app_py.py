@@ -45,26 +45,20 @@ if st.session_state.current_page == 'User Info':
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
-    # Load meditation animation JSON
+    # Load meditation and study animations
     meditation_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    study_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jcikwtux.json")
 
-    # Green bordered container with padding and rounded corners
-    st.markdown("""
-        <div style="
-            border: 4px solid #2ecc71;
-            border-radius: 20px;
-            padding: 15px;
-            max-width: 350px;
-            margin-bottom: 20px;
-            background-color: #e6f4ea;">
-    """, unsafe_allow_html=True)
-
+    # Show animations (if loaded)
     if meditation_animation:
-        st_lottie(meditation_animation, height=250, key="meditation_green")
+        st_lottie(meditation_animation, height=180, key="meditation")
     else:
         st.error("Failed to load meditation animation.")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    if study_animation:
+        st_lottie(study_animation, height=180, key="study")
+    else:
+        st.error("Failed to load study animation.")
 
     # Form Inputs
     name = st.text_input("Your Name")
