@@ -14,7 +14,7 @@ if 'current_page' not in st.session_state:
     st.session_state.current_page = 'User Info'
 
 # Sidebar Navigation (locked step-by-step)
-st.sidebar.title("🧭 Navigation")
+st.sidebar.title("Navigation")
 
 pages = ["User Info", "Dashboard", "Suggestions", "Feedback"]
 current_idx = pages.index(st.session_state.current_page)
@@ -34,8 +34,8 @@ def go_next():
 
 # ========== Page 1: User Info ==========
 if st.session_state.current_page == 'User Info':
-    st.title("🧑 User Information")
-    st.markdown("Please fill in your details to get started 👇")
+    st.title("User Information")
+    st.markdown("Please fill in your details to get started")
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
     gender = st.selectbox("Select your gender:", ["Male", "Female", "Other", "Prefer not to say"])
@@ -58,9 +58,9 @@ if st.session_state.current_page == 'User Info':
 
 # ========== Page 2: Dashboard ==========
 elif st.session_state.current_page == 'Dashboard':
-    st.title("📊 Mood Dashboard")
+    st.title("Mood Dashboard")
 
-    journal_entry = st.text_area("✍️ Write your journal entry here:")
+    journal_entry = st.text_area("Write your journal entry here:")
 
     if 'mood_analyzed' not in st.session_state:
         st.session_state.mood_analyzed = False
