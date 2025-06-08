@@ -1,6 +1,11 @@
 import streamlit as st
 import pandas as pd
 from textblob import TextBlob
+import os
+
+# Create folders if not exist
+os.makedirs("data", exist_ok=True)
+
 
 st.set_page_config(page_title="Mood Predictor App", layout="centered")
 
@@ -41,6 +46,13 @@ if st.session_state.current_page == 'User Info':
             st.session_state.name = name
             st.session_state.age = age
             st.session_state.gender = gender
+
+            
+        # Save user info
+        import csv
+        with open("data/user_info.csv", "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([name, age, gender])
             go_next()
         else:
             st.warning("Please enter your name to continue.")
@@ -106,6 +118,9 @@ elif st.session_state.current_page == 'Feedback':
 
     feedback = st.text_area("How was your experience?")
     if st.button("Submit Feedback"):
+        with open("data/feedback.csv", "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
 
 
