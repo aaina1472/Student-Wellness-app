@@ -46,7 +46,7 @@ if st.session_state.current_page == 'User Info':
     st.markdown("Please fill in your details to get started")
 
     # Load and display animation (meditation/study style)
-    animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json")
+    animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_v7gdhjfx.json")
     if animation:
         st_lottie(animation, height=220, key="meditation_study")
     else:
