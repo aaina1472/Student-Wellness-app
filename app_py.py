@@ -391,15 +391,19 @@ elif st.session_state.page == "📝 Feedback":
         
     #=========For personalized PDF Download Section==============
     if st.session_state.get("mood_analyzed", False):
-        name = st.session_state.get("name", "Anonymous")
-        mood_score = st.session_state.get("avg_mood", 0.0)
-        risk_level = st.session_state.get("risk", "Unknown")
+    name = st.session_state.get("name", "Anonymous")
+    mood_score = st.session_state.get("avg_mood", 0.0)
+    risk_level = st.session_state.get("risk", "Unknown")
 
-        pdf_path = generate_pdf(name, mood_score, risk_level)
+    pdf_path = generate_pdf(name, mood_score, risk_level)
+    pdf_path = os.path.join("data", f"{name}_wellness_report.pdf")  # ensure path is correct
 
+    if os.path.exists(pdf_path):
         with open(pdf_path, "rb") as f:
             base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-            href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_path}">📥 Download Your Wellness Report</a>'
+            href = f'<a href="data:application/pdf;base64,{base64_pdf}" download="{os.path.basename(pdf_path)}">📥 Download Your Wellness Report</a>'
             st.markdown(href, unsafe_allow_html=True)
+    else:
+        st.warning("PDF generation failed or file not found.")
 
 
