@@ -31,7 +31,7 @@ if "dark_mode" not in st.session_state:
 
 mode = option_menu(
     menu_title=None,
-    options=["\ud83c\udf19 Dark Mode"],  # Removed Light mode option as requested
+    options=["🌙 Dark Mode"],  # Removed Light mode option as requested
     orientation="horizontal",
     icons=["moon"],
     default_index=0,
@@ -87,7 +87,7 @@ st.markdown(
 )
 
 # Pages list - use exact strings everywhere
-pages = ["\ud83d\udc64 User Info", "\ud83d\udcca Dashboard", "\u2728 Suggestions", "\ud83d\udcdd Feedback"]
+pages = ["👤 User Info", "📊 Dashboard", "✨ Suggestions", "📝 Feedback"]
 
 # Initialize session state for current page
 if 'page' not in st.session_state or st.session_state.page not in pages:
@@ -102,7 +102,7 @@ for i, page in enumerate(pages):
         if st.sidebar.button(f"{i+1}. {page}", key=page):
             st.session_state.page = page
     else:
-        st.sidebar.markdown(f"{i+1}. {page} \ud83d\udd12")
+        st.sidebar.markdown(f"{i+1}. {page} 🔒")
 
 # Page Navigator
 def go_next():
@@ -111,7 +111,7 @@ def go_next():
         st.session_state.page = pages[next_idx]
 
 # ========== Page 1: User Info ==========
-if st.session_state.page == "\ud83d\udc64 User Info":
+if st.session_state.page == "👤 User Info":
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
@@ -119,7 +119,7 @@ if st.session_state.page == "\ud83d\udc64 User Info":
     if animation:
         st_lottie(animation, height=220, key="character_animation")
     else:
-        st.warning("\u26a0 Animation failed to load. Please check your internet or animation URL.")
+        st.warning("⚠️ Animation failed to load. Please check your internet or animation URL.")
 
     name = st.text_input("Your Name")
     age = st.number_input("Your Age", min_value=10, max_value=100, step=1)
@@ -141,45 +141,54 @@ if st.session_state.page == "\ud83d\udc64 User Info":
             st.warning("Please enter your name to continue.")
 
 # ========== Page 2: Dashboard ==========
-elif st.session_state.page == "\ud83d\udcca Dashboard":
+elif st.session_state.page == "📊 Dashboard":
+    st.title("Mood Dashboard")
     journal_entry = st.text_area("Write your journal entry here:")
 
-    sleep_hours = st.slider("\ud83d\udecc For what hours did you sleep last night?", 0, 12, 6)
-    screen_time = st.slider("\ud83d\udcf1 Daily Screen Time (in hours)", 0, 16, 6)
-    workout_done = st.selectbox("\ud83c\udfcb Did you work out today?", ["Yes", "No"])
+    sleep_hours = st.slider("😴 For what hours did you sleep last night?", 0, 12, 6)
+    screen_time = st.slider("📱 Daily Screen Time (in hours)", 0, 16, 6)
+    workout_done = st.selectbox("🏋️ Did you work out today?", ["Yes", "No"])
+
 
     if 'mood_analyzed' not in st.session_state:
         st.session_state.mood_analyzed = False
 
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
-            polarity = TextBlob(journal_entry).sentiment.polarity
-            sleep_score = sleep_hours
-            workout_score = 1 if workout_done == "Yes" else 0
-            screen_score = screen_time
+           # 1. NLP Sentiment Analysis
+        polarity = TextBlob(journal_entry).sentiment.polarity
 
-            mood_score = (
-                (0.4 * polarity) + 
-                (0.3 * (sleep_score / 10)) + 
-                (0.2 * workout_score) - 
-                (0.2 * (screen_score / 10))
-            )
+        # 2. Encode structured inputs
+        sleep_score = sleep_hours
+        workout_score = 1 if workout_done == "Yes" else 0
+        screen_score = screen_time
 
-            if mood_score > 0.4:
-                mood = "Happy \ud83d\ude0a"
-                risk = "Low"
-            elif mood_score > 0.1:
-                mood = "Okay \ud83d\ude42"
-                risk = "Moderate"
-            else:
-                mood = "Stressed \ud83d\ude1f"
-                risk = "High"
+        # 3. Combine all into a "Mood Score"
+        mood_score = (
+            (0.4 * polarity) + 
+            (0.3 * (sleep_score / 10)) + 
+            (0.2 * workout_score) - 
+            (0.2 * (screen_score / 10))
+        )
 
-            st.metric("Mood", mood)
-            st.metric("Mood Score", f"{mood_score:.2f}")
-            st.metric("Burnout Risk", risk)
+        # 4. Classify Mood
+        if mood_score > 0.4:
+            mood = "Happy 😊"
+            risk = "Low"
+        elif mood_score > 0.1:
+            mood = "Okay 🙂"
+            risk = "Moderate"
+        else:
+            mood = "Stressed 😟"
+            risk = "High"
 
-            st.session_state.avg_mood = mood_score
+        # 5. Display the result
+        st.metric("Mood", mood)
+        st.metric("Mood Score", f"{mood_score:.2f}")
+        st.metric("Burnout Risk", risk)
+
+
+            st.session_state.avg_mood = avg_mood
             st.session_state.risk = risk
             st.session_state.mood_analyzed = True
 
@@ -188,19 +197,17 @@ elif st.session_state.page == "\ud83d\udcca Dashboard":
                 if flower_animation:
                     st_lottie(flower_animation, height=150, key="flower_animation")
                 else:
-                    st.warning("\u26a0\ufe0f Flower animation failed to load.")
+                    st.warning("⚠️ Flower animation failed to load.")
 
             with open("data/journal_entries.csv", "a", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow([st.session_state.name, journal_entry, mood_score])
+                writer.writerow([st.session_state.name, journal_entry, avg_mood])
         else:
             st.warning("Please enter something in your journal to analyze.")
 
     if st.session_state.mood_analyzed:
         if st.button("Continue to Suggestions"):
             go_next()
-
-# Remaining pages are untouched
 
 # ========== Page 3: Suggestions ==========
 elif st.session_state.page == "✨ Suggestions":
@@ -219,7 +226,7 @@ elif st.session_state.page == "✨ Suggestions":
         st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
         st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
 
-        st.markdown("### 🗓 Suggested Routine for Moderate Risk:")
+        st.markdown("### 🗓️ Suggested Routine for Moderate Risk:")
         routine = [
             {"Time": "6:30 AM - 7:30 AM", "Activity": "Light exercise (walking, stretching)"},
             {"Time": "7:30 AM - 8:00 AM", "Activity": "Healthy breakfast with fruits and veggies"},
@@ -264,7 +271,7 @@ elif st.session_state.page == "✨ Suggestions":
         st.video("https://www.youtube.com/watch?v=2OEL4P1Rz04")
         st.markdown("[Burnout Management Tips from CDC](https://www.cdc.gov/mentalhealth/stress-coping/cope-with-stress/index.html)")
 
-        st.markdown("### 🗓 Recommended Daily Routine for You:")
+        st.markdown("### 🗓️ Recommended Daily Routine for You:")
         routine = [
             {"Time": "6:00 AM - 7:00 AM", "Activity": "Wake up & Morning exercise (stretch, yoga)"},
             {"Time": "7:00 AM - 7:30 AM", "Activity": "Healthy breakfast (include green veggies, fruits)"},
@@ -310,7 +317,7 @@ elif st.session_state.page == "✨ Suggestions":
         st.success("You're doing great! Keep it up 🥳")
 
     # === Talk of the Day with dynamic video ===
-    st.markdown("### 🎙 Talk of the Day")
+    st.markdown("### 🎙️ Talk of the Day")
 
     # Predefined video options
     video_options = {
@@ -356,4 +363,4 @@ elif st.session_state.page == "📝 Feedback":
         with open("data/feedback.csv", "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
-        st.success("Thanks for your feedback! 🌟")
+        st.success("Thanks for your feedback! 🌟") Fix the indentation error or diff errors, because i cant see sleep hrs and screen time button on the dashboard page .
