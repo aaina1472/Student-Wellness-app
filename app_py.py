@@ -10,6 +10,7 @@ import altair as alt
 from datetime import datetime
 from fpdf import FPDF
 import base64
+from io import BytesIO
 
 
 # =========Helper function Loader=============
@@ -30,26 +31,6 @@ def load_lottie_url(url):
         return r.json()
     except Exception:
         return None
-
-#=============For adding a Personalized downloadable PDF============
-def generate_pdf(name, mood_score, risk_level):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    pdf.cell(200, 10, txt="🌿 Student Wellness Report", ln=True, align='C')
-    pdf.ln(10)
-
-    pdf.cell(200, 10, txt=f"Name: {name}", ln=True)
-    pdf.cell(200, 10, txt=f"Mood Score: {mood_score:.2f}", ln=True)
-    pdf.cell(200, 10, txt=f"Burnout Risk: {risk_level}", ln=True)
-
-    pdf.ln(10)
-    pdf.multi_cell(0, 10, txt="💡 Tip: Stay consistent with your routine. Balanced sleep, less screen time, and regular exercise can greatly boost your mood!")
-
-    pdf_output = f"{name}_wellness_report.pdf"
-    pdf.output(pdf_output)
-    return pdf_output
 
 
 # Create folders if not exist
@@ -390,20 +371,58 @@ elif st.session_state.page == "📝 Feedback":
         st.info("Your feedback helps us improve. Stay happy and healthy!")
         
     #=========For personalized PDF Download Section==============
-    if st.session_state.get("mood_analyzed", False):
-    name = st.session_state.get("name", "Anonymous")
-    mood_score = st.session_state.get("avg_mood", 0.0)
-    risk_level = st.session_state.get("risk", "Unknown")
+    st.title("✨ Wellness Suggestions")
 
-    pdf_path = generate_pdf(name, mood_score, risk_level)
-    pdf_path = os.path.join("data", f"{name}_wellness_report.pdf")  # ensure path is correct
+# Example data (Use session_state if already stored)
+user_name = st.session_state.get("user_name", "Anonymous")
+email = st.session_state.get("email", "Not provided")
+journal_entry = st.session_state.get("journal_entry", "No entry submitted.")
+suggestions = st.session_state.get("wellness_suggestions", "No suggestions available.")
 
-    if os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-            href = f'<a href="data:application/pdf;base64,{base64_pdf}" download="{os.path.basename(pdf_path)}">📥 Download Your Wellness Report</a>'
-            st.markdown(href, unsafe_allow_html=True)
-    else:
-        st.warning("PDF generation failed or file not found.")
+# Show suggestions
+st.write("**Based on your mood and responses, here are some wellness suggestions:**")
+st.success(suggestions)
+
+# PDF download section
+if st.button("📄 Generate Downloadable Report"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    pdf.cell(200, 10, txt="🧠 Student Wellness Report", ln=1, align="C")
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Date & Time: {now}", ln=1)
+    pdf.cell(200, 10, txt=f"Name: {user_name}", ln=1)
+    pdf.cell(200, 10, txt=f"Email: {email}", ln=1)
+    pdf.ln(10)
+
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(200, 10, txt="Journal Entry:", ln=1)
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, journal_entry)
+    pdf.ln(5)
+
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(200, 10, txt="Wellness Suggestions:", ln=1)
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, suggestions)
+
+    pdf_output = BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
+
+    st.download_button(
+        label="📥 Download Wellness Report",
+        data=pdf_output,
+        file_name=f"{user_name.replace(' ', '_')}_Wellness_Report.pdf",
+        mime="application/pdf"
+    )
+
+# Continue button to go to Feedback page
+if st.button("➡️ Continue to Feedback"):
+    st.session_state.page = "📝 Feedback"
+    st.rerun()
+
 
 
