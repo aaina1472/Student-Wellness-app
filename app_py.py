@@ -205,7 +205,7 @@ elif st.session_state.page == "📊 Dashboard":
     
     # ========== Page 3: Suggestions ==========
     elif st.session_state.page == "✨ Suggestions":
-    st.title("🧘 Wellness Suggestions")
+        st.title("🧘 Wellness Suggestions")
 
     risk = st.session_state.get('risk', 'Moderate')
 
