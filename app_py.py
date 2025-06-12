@@ -27,8 +27,9 @@ st.set_page_config(page_title="Mood Predictor App", layout="centered")
 
 # ---------- Dark Mode (only) Theming ----------
 if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = True  # default dark mode on
+    st.session_state.dark_mode = True
 
+# default dark mode on
 mode = option_menu(
     menu_title=None,
     options=["🌙 Dark Mode"],  # Removed Light mode option as requested
@@ -161,9 +162,9 @@ elif st.session_state.page == "📊 Dashboard":
             screen_score = screen_time
 
             mood_score = (
-                (0.4 * polarity) + 
-                (0.3 * (sleep_score / 10)) + 
-                (0.2 * workout_score) - 
+                (0.4 * polarity) +
+                (0.3 * (sleep_score / 10)) +
+                (0.2 * workout_score) -
                 (0.2 * (screen_score / 10))
             )
 
@@ -198,19 +199,15 @@ elif st.session_state.page == "📊 Dashboard":
         if st.button("Continue to Suggestions"):
             go_next()
 
-    
-    # ========== Page 3: Suggestions ==========
+# ========== Page 3: Suggestions ==========
+elif st.session_state.page == "✨ Suggestions":
+    st.title("🧘 Wellness Suggestions")
 
-   elif st.session_state.page == "✨ Suggestions":
-        st.title("🧘 Wellness Suggestions")
-
-        risk = st.session_state.get('risk', 'Moderate')
+    risk = st.session_state.get('risk', 'Moderate')
 
     if "motivational_shown" not in st.session_state:
         st.session_state.motivational_shown = True
-        st.info(
-            "💡 Motivation: \"The only way to do great work is to love what you do.\" – Steve Jobs"
-        )
+        st.info("💡 Motivation: \"The only way to do great work is to love what you do.\" – Steve Jobs")
 
     if risk == "Moderate":
         st.subheader("You might be feeling overwhelmed.")
@@ -339,8 +336,8 @@ elif st.session_state.page == "📊 Dashboard":
     if st.button("Continue to Feedback"):
         go_next()
 
-    # ========== Page 4: Feedback ==========
-  elif st.session_state.page == "📝 Feedback":
+# ========== Page 4: Feedback ==========
+elif st.session_state.page == "📝 Feedback":
     st.title("💬 Feedback")
     st.write("Thank you for using our Mood Prediction App!")
 
@@ -350,5 +347,6 @@ elif st.session_state.page == "📊 Dashboard":
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
+
 
 
