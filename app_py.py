@@ -143,7 +143,7 @@ if st.session_state.page == "👤 User Info":
 # ========== Page 2: Dashboard ==========
 elif st.session_state.page == "📊 Dashboard":
     st.title("Mood Dashboard")
-    journal_entry = st.text_area("Write your journal entry here:", Start typing here...)
+    journal_entry = st.text_area("Write your journal entry here:")
 
     sleep_hours = st.slider("😴 For what hours did you sleep last night?", 0, 12, 6)
     screen_time = st.slider("📱 Daily Screen Time (in hours)", 0, 16, 6)
@@ -200,10 +200,11 @@ elif st.session_state.page == "📊 Dashboard":
 
     
     # ========== Page 3: Suggestions ==========
-    elif st.session_state.page == "✨ Suggestions":
-        st.title("🧘 Wellness Suggestions")
 
-        risk = st.session_state.get('risk', 'Moderate')
+   elif st.session_state.page == "✨ Suggestions":
+    st.title("🧘 Wellness Suggestions")
+
+    risk = st.session_state.get('risk', 'Moderate')
 
     if "motivational_shown" not in st.session_state:
         st.session_state.motivational_shown = True
@@ -337,11 +338,11 @@ elif st.session_state.page == "📊 Dashboard":
 
     if st.button("Continue to Feedback"):
         go_next()
-        
+
     # ========== Page 4: Feedback ==========
-    elif st.session_state.page == "📝 Feedback":
-        st.title("💬 Feedback")
-        st.write("Thank you for using our Mood Prediction App!")
+  elif st.session_state.page == "📝 Feedback":
+    st.title("💬 Feedback")
+    st.write("Thank you for using our Mood Prediction App!")
 
     feedback = st.text_area("How was your experience?")
     if st.button("Submit Feedback"):
@@ -349,4 +350,5 @@ elif st.session_state.page == "📊 Dashboard":
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
+
 
