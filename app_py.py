@@ -343,9 +343,9 @@ elif st.session_state.page == "📊 Dashboard":
         go_next()
         
     # ========== Page 4: Feedback ==========
-      elif st.session_state.page == "📝 Feedback":
-    st.title("💬 Feedback")
-    st.write("Thank you for using our Mood Prediction App!")
+    elif st.session_state.page == "📝 Feedback":
+        st.title("💬 Feedback")
+        st.write("Thank you for using our Mood Prediction App!")
 
     feedback = st.text_area("How was your experience?")
     if st.button("Submit Feedback"):
