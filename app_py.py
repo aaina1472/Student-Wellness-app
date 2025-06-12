@@ -8,6 +8,9 @@ import requests
 from streamlit_option_menu import option_menu
 import altair as alt
 from datetime import datetime
+from fpdf import FPDF
+import base64
+
 
 # =========Helper function Loader=============
 def load_lottie_url(url):
@@ -27,6 +30,27 @@ def load_lottie_url(url):
         return r.json()
     except Exception:
         return None
+
+#=============For adding a Personalized downloadable PDF============
+def generate_pdf(name, mood_score, risk_level):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    pdf.cell(200, 10, txt="🌿 Student Wellness Report", ln=True, align='C')
+    pdf.ln(10)
+
+    pdf.cell(200, 10, txt=f"Name: {name}", ln=True)
+    pdf.cell(200, 10, txt=f"Mood Score: {mood_score:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Burnout Risk: {risk_level}", ln=True)
+
+    pdf.ln(10)
+    pdf.multi_cell(0, 10, txt="💡 Tip: Stay consistent with your routine. Balanced sleep, less screen time, and regular exercise can greatly boost your mood!")
+
+    pdf_output = f"{name}_wellness_report.pdf"
+    pdf.output(pdf_output)
+    return pdf_output
+
 
 # Create folders if not exist
 os.makedirs("data", exist_ok=True)
@@ -364,6 +388,18 @@ elif st.session_state.page == "📝 Feedback":
         # ✨ Add custom thank-you message
         st.markdown("### 🙏 We appreciate your time!")
         st.info("Your feedback helps us improve. Stay happy and healthy!")
+        
+    #=========For personalized PDF Download Section==============
+    if st.session_state.get("mood_analyzed", False):
+        name = st.session_state.get("name", "Anonymous")
+        mood_score = st.session_state.get("avg_mood", 0.0)
+        risk_level = st.session_state.get("risk", "Unknown")
 
+        pdf_path = generate_pdf(name, mood_score, risk_level)
+
+        with open(pdf_path, "rb") as f:
+            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+            href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_path}">📥 Download Your Wellness Report</a>'
+            st.markdown(href, unsafe_allow_html=True)
 
 
