@@ -143,7 +143,7 @@ if st.session_state.page == "👤 User Info":
 # ========== Page 2: Dashboard ==========
 elif st.session_state.page == "📊 Dashboard":
     st.title("Mood Dashboard")
-    journal_entry = st.text_area("Write your journal entry here:")
+    journal_entry = st.text_area("Write your journal entry here:", Start typing here...)
 
     sleep_hours = st.slider("😴 For what hours did you sleep last night?", 0, 12, 6)
     screen_time = st.slider("📱 Daily Screen Time (in hours)", 0, 16, 6)
@@ -191,10 +191,6 @@ elif st.session_state.page == "📊 Dashboard":
                     st_lottie(flower_animation, height=150, key="flower_animation")
                 else:
                     st.warning("⚠️ Flower animation failed to load.")
-
-            with open("data/journal_entries.csv", "a", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow([st.session_state.name, journal_entry, mood_score])
         else:
             st.warning("Please enter something in your journal to analyze.")
 
@@ -207,7 +203,7 @@ elif st.session_state.page == "📊 Dashboard":
     elif st.session_state.page == "✨ Suggestions":
         st.title("🧘 Wellness Suggestions")
 
-    risk = st.session_state.get('risk', 'Moderate')
+        risk = st.session_state.get('risk', 'Moderate')
 
     if "motivational_shown" not in st.session_state:
         st.session_state.motivational_shown = True
