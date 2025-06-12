@@ -145,28 +145,48 @@ elif st.session_state.page == "📊 Dashboard":
     st.title("Mood Dashboard")
     journal_entry = st.text_area("Write your journal entry here:")
 
+    sleep_hours = st.slider("😴 For what hours did you sleep last night?", 0, 12, 6)
+    screen_time = st.slider("📱 Daily Screen Time (in hours)", 0, 16, 6)
+    workout_done = st.selectbox("🏋️ Did you work out today?", ["Yes", "No"])
+
+
     if 'mood_analyzed' not in st.session_state:
         st.session_state.mood_analyzed = False
 
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
-            df = pd.DataFrame({'journal_entry': [journal_entry]})
+           # 1. NLP Sentiment Analysis
+        polarity = TextBlob(journal_entry).sentiment.polarity
 
-            def analyze_mood(text):
-                return TextBlob(str(text)).sentiment.polarity
+        # 2. Encode structured inputs
+        sleep_score = sleep_hours
+        workout_score = 1 if workout_done == "Yes" else 0
+        screen_score = screen_time
 
-            df['Mood Score'] = df['journal_entry'].apply(analyze_mood)
-            avg_mood = df['Mood Score'].mean()
+        # 3. Combine all into a "Mood Score"
+        mood_score = (
+            (0.4 * polarity) + 
+            (0.3 * (sleep_score / 10)) + 
+            (0.2 * workout_score) - 
+            (0.2 * (screen_score / 10))
+        )
 
-            if avg_mood > 0.3:
-                risk = "Low"
-            elif avg_mood > 0.0:
-                risk = "Moderate"
-            else:
-                risk = "High"
+        # 4. Classify Mood
+        if mood_score > 0.4:
+            mood = "Happy 😊"
+            risk = "Low"
+        elif mood_score > 0.1:
+            mood = "Okay 🙂"
+            risk = "Moderate"
+        else:
+            mood = "Stressed 😟"
+            risk = "High"
 
-            st.metric("Average Mood Score", f"{avg_mood:.2f}")
-            st.metric("Burnout Risk", risk)
+        # 5. Display the result
+        st.metric("Mood", mood)
+        st.metric("Mood Score", f"{mood_score:.2f}")
+        st.metric("Burnout Risk", risk)
+
 
             st.session_state.avg_mood = avg_mood
             st.session_state.risk = risk
