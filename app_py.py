@@ -9,6 +9,14 @@ from streamlit_option_menu import option_menu
 import altair as alt
 from datetime import datetime
 
+# =========Helper function Loader=============
+def load_lottie_url(url):
+    r = requests.get(url)
+    if r.status_code == 200:
+        return r.json()
+    else:
+        return None
+
 # ========== Function to Load Animation with cache ==========
 @st.cache_data(ttl=3600)
 def load_lottie_url(url):
@@ -340,13 +348,22 @@ elif st.session_state.page == "✨ Suggestions":
 elif st.session_state.page == "📝 Feedback":
     st.title("💬 Feedback")
     st.write("Thank you for using our Mood Prediction App!")
-
+    # Load animation
+    feedback_animation = load_lottie_url("https://assets9.lottiefiles.com/packages/lf20_tutvdkg0.json")  # You can replace this URL with any other Lottie animation
+    
+    if feedback_animation:
+        st_lottie(feedback_animation, height=200, key="feedback_anim")
+    else:
+        st.warning("⚠️ Animation failed to load.")
     feedback = st.text_area("How was your experience?")
     if st.button("Submit Feedback"):
         with open("data/feedback.csv", "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
         st.success("Thanks for your feedback! 🌟")
+        # ✨ Add custom thank-you message
+        st.markdown("### 🙏 We appreciate your time!")
+        st.info("Your feedback helps us improve. Stay happy and healthy!")
 
 
 
