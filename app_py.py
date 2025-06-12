@@ -149,46 +149,39 @@ elif st.session_state.page == "📊 Dashboard":
     screen_time = st.slider("📱 Daily Screen Time (in hours)", 0, 16, 6)
     workout_done = st.selectbox("🏋️ Did you work out today?", ["Yes", "No"])
 
-
     if 'mood_analyzed' not in st.session_state:
         st.session_state.mood_analyzed = False
 
     if st.button("Analyze My Mood"):
         if journal_entry.strip():
-           # 1. NLP Sentiment Analysis
-        polarity = TextBlob(journal_entry).sentiment.polarity
+            polarity = TextBlob(journal_entry).sentiment.polarity
 
-        # 2. Encode structured inputs
-        sleep_score = sleep_hours
-        workout_score = 1 if workout_done == "Yes" else 0
-        screen_score = screen_time
+            sleep_score = sleep_hours
+            workout_score = 1 if workout_done == "Yes" else 0
+            screen_score = screen_time
 
-        # 3. Combine all into a "Mood Score"
-        mood_score = (
-            (0.4 * polarity) + 
-            (0.3 * (sleep_score / 10)) + 
-            (0.2 * workout_score) - 
-            (0.2 * (screen_score / 10))
-        )
+            mood_score = (
+                (0.4 * polarity) + 
+                (0.3 * (sleep_score / 10)) + 
+                (0.2 * workout_score) - 
+                (0.2 * (screen_score / 10))
+            )
 
-        # 4. Classify Mood
-        if mood_score > 0.4:
-            mood = "Happy 😊"
-            risk = "Low"
-        elif mood_score > 0.1:
-            mood = "Okay 🙂"
-            risk = "Moderate"
-        else:
-            mood = "Stressed 😟"
-            risk = "High"
+            if mood_score > 0.4:
+                mood = "Happy 😊"
+                risk = "Low"
+            elif mood_score > 0.1:
+                mood = "Okay 🙂"
+                risk = "Moderate"
+            else:
+                mood = "Stressed 😟"
+                risk = "High"
 
-        # 5. Display the result
-        st.metric("Mood", mood)
-        st.metric("Mood Score", f"{mood_score:.2f}")
-        st.metric("Burnout Risk", risk)
+            st.metric("Mood", mood)
+            st.metric("Mood Score", f"{mood_score:.2f}")
+            st.metric("Burnout Risk", risk)
 
-
-            st.session_state.avg_mood = avg_mood
+            st.session_state.avg_mood = mood_score
             st.session_state.risk = risk
             st.session_state.mood_analyzed = True
 
@@ -201,7 +194,7 @@ elif st.session_state.page == "📊 Dashboard":
 
             with open("data/journal_entries.csv", "a", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow([st.session_state.name, journal_entry, avg_mood])
+                writer.writerow([st.session_state.name, journal_entry, mood_score])
         else:
             st.warning("Please enter something in your journal to analyze.")
 
@@ -209,8 +202,9 @@ elif st.session_state.page == "📊 Dashboard":
         if st.button("Continue to Suggestions"):
             go_next()
 
-# ========== Page 3: Suggestions ==========
-elif st.session_state.page == "✨ Suggestions":
+    
+    # ========== Page 3: Suggestions ==========
+    elif st.session_state.page == "✨ Suggestions":
     st.title("🧘 Wellness Suggestions")
 
     risk = st.session_state.get('risk', 'Moderate')
@@ -316,10 +310,8 @@ elif st.session_state.page == "✨ Suggestions":
     else:
         st.success("You're doing great! Keep it up 🥳")
 
-    # === Talk of the Day with dynamic video ===
     st.markdown("### 🎙️ Talk of the Day")
 
-    # Predefined video options
     video_options = {
         "TEDx - The Power of Vulnerability": "https://www.youtube.com/watch?v=iCvmsMzlF7o",
         "Motivational Speech - Never Give Up": "https://www.youtube.com/watch?v=mgmVOuLgFB0",
@@ -328,9 +320,7 @@ elif st.session_state.page == "✨ Suggestions":
     }
 
     selected_title = st.selectbox("Select a video:", options=list(video_options.keys()))
-
     custom_url = st.text_input("Or enter a YouTube video URL:")
-
     video_url = custom_url.strip() if custom_url.strip() else video_options[selected_title]
 
     try:
@@ -351,10 +341,9 @@ elif st.session_state.page == "✨ Suggestions":
 
     if st.button("Continue to Feedback"):
         go_next()
-
-
-# ========== Page 4: Feedback ==========
-elif st.session_state.page == "📝 Feedback":
+        
+    # ========== Page 4: Feedback ==========
+      elif st.session_state.page == "📝 Feedback":
     st.title("💬 Feedback")
     st.write("Thank you for using our Mood Prediction App!")
 
@@ -363,4 +352,5 @@ elif st.session_state.page == "📝 Feedback":
         with open("data/feedback.csv", "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([st.session_state.get("name", "Anonymous"), feedback])
-        st.success("Thanks for your feedback! 🌟") Fix the indentation error or diff errors, because i cant see sleep hrs and screen time button on the dashboard page .
+        st.success("Thanks for your feedback! 🌟")
+
