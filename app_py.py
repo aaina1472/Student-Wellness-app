@@ -368,55 +368,6 @@ elif st.session_state.page == "📝 Feedback":
         # ✨ Add custom thank-you message
         st.markdown("### 🙏 We appreciate your time!")
         st.info("Your feedback helps us improve. Stay happy and healthy!")
-        
-    #=========For personalized PDF Download Section==============
-    st.title("✨ Wellness Suggestions")
-
-# Example data (Use session_state if already stored)
-user_name = st.session_state.get("user_name", "Anonymous")
-email = st.session_state.get("email", "Not provided")
-journal_entry = st.session_state.get("journal_entry", "No entry submitted.")
-suggestions = st.session_state.get("wellness_suggestions", "No suggestions available.")
-
-# Show suggestions
-st.write("**Based on your mood and responses, here are some wellness suggestions:**")
-st.success(suggestions)
-
-# PDF download section
-if st.button("📄 Generate Downloadable Report"):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    pdf.cell(200, 10, txt="🧠 Student Wellness Report", ln=1, align="C")
-    pdf.ln(10)
-    pdf.cell(200, 10, txt=f"Date & Time: {now}", ln=1)
-    pdf.cell(200, 10, txt=f"Name: {user_name}", ln=1)
-    pdf.cell(200, 10, txt=f"Email: {email}", ln=1)
-    pdf.ln(10)
-
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(200, 10, txt="Journal Entry:", ln=1)
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, journal_entry)
-    pdf.ln(5)
-
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(200, 10, txt="Wellness Suggestions:", ln=1)
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, suggestions)
-
-    pdf_output = BytesIO()
-    pdf.output(pdf_output)
-    pdf_output.seek(0)
-
-    st.download_button(
-        label="📥 Download Wellness Report",
-        data=pdf_output,
-        file_name=f"{user_name.replace(' ', '_')}_Wellness_Report.pdf",
-        mime="application/pdf"
-    )
 
 # Continue button to go to Feedback page
 if st.button("➡️ Continue to Feedback"):
