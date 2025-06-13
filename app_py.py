@@ -8,7 +8,6 @@ import requests
 from streamlit_option_menu import option_menu
 import altair as alt
 from datetime import datetime
-from fpdf import FPDF
 import base64
 from io import BytesIO
 
