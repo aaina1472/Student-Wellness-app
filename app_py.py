@@ -369,8 +369,8 @@ elif st.session_state.page == "📝 Feedback":
         st.markdown("### 🙏 We appreciate your time!")
         st.info("Your feedback helps us improve. Stay happy and healthy!")
 
-# Continue button to go to Feedback page
-if st.button("➡️ Continue to Feedback"):
+    # Continue button to go to Feedback page
+    if st.button("➡️ Continue to Feedback"):
     st.session_state.page = "📝 Feedback"
     st.rerun()
 
