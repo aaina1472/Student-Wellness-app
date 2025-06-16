@@ -128,7 +128,7 @@ def go_next():
         st.session_state.page = pages[next_idx]
 
 # ========== Page 1: User Info ==========
-if st.session_state.current_page == "👤 User Info":
+if st.session_state.page == "👤 User Info":
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
@@ -158,7 +158,7 @@ if st.session_state.current_page == "👤 User Info":
             st.warning("Please enter your name to continue.")
 
 # ========== Page 2: Dashboard ==========
-elif st.session_state.current_page == "📊 Dashboard":
+elif st.session_state.page == "📊 Dashboard":
     st.title("Mood Dashboard")
     journal_entry = st.text_area("Write your journal entry here:")
 
@@ -216,7 +216,7 @@ elif st.session_state.current_page == "📊 Dashboard":
             go_next()
 
 # ========== Page 3: Suggestions ==========
-elif st.session_state.current_page == "✨ Suggestions":
+elif st.session_state.page == "✨ Suggestions":
     st.title("🧘 Wellness Suggestions")
 
     risk = st.session_state.get('risk', 'Moderate')
@@ -360,7 +360,7 @@ elif st.session_state.current_page == "✨ Suggestions":
 
 #=========== Page 4: Chatbot ============
 if "current_page" not in st.session_state:
-    st.session_state.current_page = "Chatbot"  # Set chatbot as default start page
+    st.session_state.page = "Chatbot"  # Set chatbot as default start page
 
 
 def chatbot_page():
@@ -404,7 +404,7 @@ def chatbot_page():
 
 
 # ========== Page 4: Feedback ===========
-    elif st.session_state.current_page == "📝 Feedback":
+elif st.session_state.page == "📝 Feedback":
         st.title("💬 Feedback")
         st.write("Thank you for using our Mood Prediction App!")
     # Load animation
