@@ -359,6 +359,9 @@ elif st.session_state.current_page == "✨ Suggestions":
 
 
 #=========== Page 4: Chatbot ============
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "Chatbot"  # Set chatbot as default start page
+
 
 def chatbot_page():
     st.title("🧠 Chat with Your Wellness Buddy")
@@ -394,6 +397,11 @@ def chatbot_page():
                 st.chat_message("assistant").markdown(reply)
             except Exception as e:
                 st.error(f"Error: {e}")
+
+    if st.button("Continue to Feedback"):
+    st.session_state.current_page = "Feedback"
+    st.rerun()
+
 
 # ========== Page 4: Feedback ===========
 elif st.session_state.current_page == "📝 Feedback":
