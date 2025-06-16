@@ -10,7 +10,11 @@ import altair as alt
 from datetime import datetime
 import base64
 from io import BytesIO
+import openai
 
+
+# Add your OpenAI API key here
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
 # =========Helper function Loader=============
 def load_lottie_url(url):
@@ -100,7 +104,7 @@ st.markdown(
 )
 
 # Pages list - use exact strings everywhere
-pages = ["👤 User Info", "📊 Dashboard", "✨ Suggestions", "📝 Feedback"]
+pages = ["👤 User Info", "📊 Dashboard", "✨ Suggestions", "Chatbot" "📝 Feedback"]
 
 # Initialize session state for current page
 if 'page' not in st.session_state or st.session_state.page not in pages:
@@ -344,11 +348,54 @@ elif st.session_state.page == "✨ Suggestions":
     caption_text = captions.get(selected_title, "")
     if caption_text:
         st.caption(caption_text)
-
-    if st.button("Continue to Feedback"):
+        
+    st.button("Chat with Wellness Bot", on_click=lambda: go_next("Chatbot"))
         go_next()
 
-# ========== Page 4: Feedback ==========
+
+
+
+
+
+
+#=========== Page 4: Chatbot ============
+
+def chatbot_page():
+    st.title("🧠 Chat with Your Wellness Buddy")
+    st.markdown("Feel free to talk about your day, stress, or anything on your mind 💬")
+
+    # Get mood score and convert to mood label
+    score = st.session_state.mood_score
+    mood = "positive" if score > 0.3 else "negative" if score < -0.3 else "neutral"
+
+    # Initialize message history
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {"role": "system", "content": f"You are a kind and understanding mental wellness coach. The student is feeling {mood}."}
+        ]
+
+    # Display chat history
+    for msg in st.session_state.messages[1:]:
+        st.chat_message(msg["role"]).markdown(msg["content"])
+
+    # User input
+    if prompt := st.chat_input("Say something..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").markdown(prompt)
+
+        with st.spinner("Thinking..."):
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=st.session_state.messages
+                )
+                reply = response.choices[0].message.content
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+                st.chat_message("assistant").markdown(reply)
+            except Exception as e:
+                st.error(f"Error: {e}")
+
+# ========== Page 4: Feedback ===========
 elif st.session_state.page == "📝 Feedback":
     st.title("💬 Feedback")
     st.write("Thank you for using our Mood Prediction App!")
