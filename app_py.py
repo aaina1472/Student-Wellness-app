@@ -399,8 +399,8 @@ def chatbot_page():
                 st.error(f"Error: {e}")
 
     if st.button("Continue to Feedback"):
-    st.session_state.current_page = "Feedback"
-    st.rerun()
+        st.session_state.current_page = "Feedback"
+        st.rerun()
 
 
 # ========== Page 4: Feedback ===========
