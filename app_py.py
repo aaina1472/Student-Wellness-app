@@ -128,7 +128,7 @@ def go_next():
         st.session_state.page = pages[next_idx]
 
 # ========== Page 1: User Info ==========
-if st.session_state.page == "👤 User Info":
+if st.session_state.current_page == "👤 User Info":
     st.title("User Information")
     st.markdown("Please fill in your details to get started")
 
@@ -158,7 +158,7 @@ if st.session_state.page == "👤 User Info":
             st.warning("Please enter your name to continue.")
 
 # ========== Page 2: Dashboard ==========
-elif st.session_state.page == "📊 Dashboard":
+elif st.session_state.current_page == "📊 Dashboard":
     st.title("Mood Dashboard")
     journal_entry = st.text_area("Write your journal entry here:")
 
@@ -216,7 +216,7 @@ elif st.session_state.page == "📊 Dashboard":
             go_next()
 
 # ========== Page 3: Suggestions ==========
-elif st.session_state.page == "✨ Suggestions":
+elif st.session_state.current_page == "✨ Suggestions":
     st.title("🧘 Wellness Suggestions")
 
     risk = st.session_state.get('risk', 'Moderate')
@@ -396,7 +396,7 @@ def chatbot_page():
                 st.error(f"Error: {e}")
 
 # ========== Page 4: Feedback ===========
-elif st.session_state.page == "📝 Feedback":
+elif st.session_state.current_page == "📝 Feedback":
     st.title("💬 Feedback")
     st.write("Thank you for using our Mood Prediction App!")
     # Load animation
