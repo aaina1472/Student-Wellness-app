@@ -404,11 +404,11 @@ def chatbot_page():
 
 
 # ========== Page 4: Feedback ===========
-elif st.session_state.current_page == "📝 Feedback":
-    st.title("💬 Feedback")
-    st.write("Thank you for using our Mood Prediction App!")
+    elif st.session_state.current_page == "📝 Feedback":
+        st.title("💬 Feedback")
+        st.write("Thank you for using our Mood Prediction App!")
     # Load animation
-    feedback_animation = load_lottie_url("https://assets9.lottiefiles.com/packages/lf20_tutvdkg0.json")  # You can replace this URL with any other Lottie animation
+        feedback_animation = load_lottie_url("https://assets9.lottiefiles.com/packages/lf20_tutvdkg0.json")  # You can replace this URL with any other Lottie animation
     
     if feedback_animation:
         st_lottie(feedback_animation, height=200, key="feedback_anim")
