@@ -350,7 +350,7 @@ elif st.session_state.page == "✨ Suggestions":
         st.caption(caption_text)
         
     st.button("Chat with Wellness Bot", on_click=lambda: go_next("Chatbot"))
-        go_next()
+    go_next()
 
 
 
