@@ -400,7 +400,7 @@ def chatbot_page():
 
     if st.button("Continue to Feedback"):
         st.session_state.current_page = "Feedback"
-        st.rerun()
+        go_next()
 
 
 # ========== Page 4: Feedback ===========
